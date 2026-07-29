@@ -1,0 +1,28 @@
+# Build output
+bin/
+obj/
+publish/
+
+# IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Logs & uploads (dev-time)
+backend/src/API/logs/
+backend/src/API/wwwroot/uploads/
+
+# Secrets
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+
+# Local tool settings/session artifacts (machine-specific, not shared)
+.claude/
+*-run*.log
+
+# OS
+.DS_Store
+Thumbs.db

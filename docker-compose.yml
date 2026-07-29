@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-molecule_by_makeover}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-molecule_by_makeover}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-molecule_by_makeover};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      Jwt__Issuer: ${JWT_ISSUER:-MoleculeByMakeover}
+      Jwt__Audience: ${JWT_AUDIENCE:-MoleculeByMakeoverClient}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY:?JWT signing key is required}
+      Jwt__AccessTokenMinutes: ${JWT_ACCESS_TOKEN_MINUTES:-15}
+      Jwt__RefreshTokenDays: ${JWT_REFRESH_TOKEN_DAYS:-14}
+      Payments__Stripe__Enabled: "true"
+      Payments__Stripe__SecretKey: ${STRIPE_SECRET_KEY}
+      Payments__Stripe__PublishableKey: ${STRIPE_PUBLISHABLE_KEY}
+      Payments__Stripe__WebhookSecret: ${STRIPE_WEBHOOK_SECRET}
+      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      Smtp__FromAddress: ${SMTP_FROM_ADDRESS:-no-reply@moleculebymakeover.com}
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      Frontend__BaseUrl: ${FRONTEND_BASE_URL:-http://localhost:5173}
+      FileStorage__RootPath: /app/wwwroot/uploads
+      FileStorage__PublicBaseUrl: /uploads
+    volumes:
+      - uploads-data:/app/wwwroot/uploads
+      - logs-data:/app/logs
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080/api/v1}
+        VITE_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${FRONTEND_PORT:-5173}:80"
+
+volumes:
+  postgres-data:
+  uploads-data:
+  logs-data:
