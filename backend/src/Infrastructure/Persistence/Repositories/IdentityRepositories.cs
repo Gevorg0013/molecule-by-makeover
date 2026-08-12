@@ -24,3 +24,9 @@ public class RefreshTokenRepository(AppDbContext context) : Repository<RefreshTo
     public async Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken ct = default) =>
         await DbSet.FirstOrDefaultAsync(t => t.TokenHash == tokenHash, ct);
 }
+
+public class PasswordResetTokenRepository(AppDbContext context) : Repository<PasswordResetToken>(context), IPasswordResetTokenRepository
+{
+    public async Task<PasswordResetToken?> GetByTokenHashAsync(string tokenHash, CancellationToken ct = default) =>
+        await DbSet.FirstOrDefaultAsync(t => t.TokenHash == tokenHash, ct);
+}

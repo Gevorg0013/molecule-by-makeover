@@ -42,14 +42,20 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
 
         if (exception is ValidationException validationException)
         {
-            var problem = new ValidationProblemDetails
+            // A single property can break several rules at once (an empty slug fails both
+            // NotEmpty and the format regex), so errors are grouped rather than added one by
+            // one - Dictionary.Add on a repeated property name would throw and turn the 400
+            // into a 500.
+            var errors = validationException.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).Distinct().ToArray());
+
+            var problem = new ValidationProblemDetails(errors)
             {
                 Title = title,
                 Status = (int)statusCode,
                 Instance = context.Request.Path
             };
-            foreach (var error in validationException.Errors)
-                problem.Errors.Add(error.PropertyName, [error.ErrorMessage]);
 
             await context.Response.WriteAsJsonAsync(problem);
             return;

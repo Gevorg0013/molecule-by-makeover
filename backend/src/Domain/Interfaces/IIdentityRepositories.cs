@@ -17,3 +17,8 @@ public interface IRefreshTokenRepository : IRepository<RefreshToken>
 {
     Task<RefreshToken?> GetByTokenHashAsync(string tokenHash, CancellationToken ct = default);
 }
+
+public interface IPasswordResetTokenRepository : IRepository<PasswordResetToken>
+{
+    Task<PasswordResetToken?> GetByTokenHashAsync(string tokenHash, CancellationToken ct = default);
+}

@@ -5,6 +5,7 @@ public interface IUnitOfWork
     IUserRepository Users { get; }
     IRoleRepository Roles { get; }
     IRefreshTokenRepository RefreshTokens { get; }
+    IPasswordResetTokenRepository PasswordResetTokens { get; }
     ILanguageRepository Languages { get; }
 
     ICategoryRepository Categories { get; }

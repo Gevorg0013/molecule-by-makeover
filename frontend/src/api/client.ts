@@ -37,6 +37,17 @@ async function performRefresh(): Promise<string | null> {
   }
 }
 
+// Shared by the 401 interceptor below and useBootstrapAuth so concurrent
+// callers (e.g. React StrictMode's double effect invocation) coalesce into a
+// single /auth/refresh call instead of racing and tripping the backend's
+// refresh-token reuse detection, which revokes all sessions.
+export function refreshSession(): Promise<string | null> {
+  refreshPromise ??= performRefresh().finally(() => {
+    refreshPromise = null
+  })
+  return refreshPromise
+}
+
 const NO_REFRESH_PATHS = ['/auth/refresh', '/auth/login', '/auth/register']
 
 apiClient.interceptors.response.use(
@@ -47,10 +58,7 @@ apiClient.interceptors.response.use(
 
     if (error.response?.status === 401 && original && !original._retry && !isExempt) {
       original._retry = true
-      refreshPromise ??= performRefresh().finally(() => {
-        refreshPromise = null
-      })
-      const token = await refreshPromise
+      const token = await refreshSession()
       if (token) {
         original.headers.set('Authorization', `Bearer ${token}`)
         return apiClient(original)

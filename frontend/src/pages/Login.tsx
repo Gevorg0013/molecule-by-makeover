@@ -51,6 +51,9 @@ export function LoginPage() {
           <Label className="mb-1.5">{t('auth.password')}</Label>
           <Input type="password" {...register('password')} />
           {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>}
+          <Link to="/forgot-password" className="mt-1.5 inline-block text-sm text-muted-foreground hover:underline">
+            {t('auth.forgotPasswordLink')}
+          </Link>
         </div>
         {login.isError && <p className="text-sm text-destructive">{authErrorMessage(login.error)}</p>}
         <Button type="submit" size="lg" disabled={login.isPending}>

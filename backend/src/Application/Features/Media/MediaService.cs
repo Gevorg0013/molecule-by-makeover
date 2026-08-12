@@ -9,11 +9,19 @@ namespace MoleculeByMakeover.Application.Features.Media;
 
 public class MediaService(IUnitOfWork unitOfWork, IFileStorageService fileStorageService, IMapper mapper) : IMediaService
 {
-    private static readonly HashSet<string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "image/jpeg", "image/png", "image/webp", "image/gif"
-    };
     private const long MaxSizeBytes = 10 * 1024 * 1024;
+
+    // The value is the canonical extension the file is stored under; the client-supplied name is
+    // never trusted for it, so a ".aspx" masquerading as an image can't land in wwwroot.
+    private static readonly Dictionary<string, string> AllowedContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["image/jpeg"] = ".jpg",
+        ["image/png"] = ".png",
+        ["image/webp"] = ".webp",
+        ["image/gif"] = ".gif"
+    };
+
+    private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
 
     public async Task<List<GalleryImageDto>> GetAllAsync(CancellationToken ct = default)
     {
@@ -21,21 +29,29 @@ public class MediaService(IUnitOfWork unitOfWork, IFileStorageService fileStorag
         return mapper.Map<List<GalleryImageDto>>(images);
     }
 
-    public async Task<GalleryImageDto> UploadAsync(Stream content, string fileName, string contentType, Guid? uploadedByUserId, string? altText, CancellationToken ct = default)
+    public async Task<GalleryImageDto> UploadAsync(Stream content, string fileName, string contentType, Guid? uploadedByUserId, string? altText, string folder, CancellationToken ct = default)
     {
-        if (!AllowedContentTypes.Contains(contentType))
-            throw new BadRequestException("Only JPEG, PNG, WebP, or GIF images are allowed.");
+        if (!AllowedContentTypes.TryGetValue(contentType ?? string.Empty, out var extension))
+            throw new BadRequestException("Only JPG, PNG, WebP, or GIF images are allowed.");
+        if (content.Length == 0)
+            throw new BadRequestException("The uploaded file is empty.");
         if (content.Length > MaxSizeBytes)
             throw new BadRequestException("Image exceeds the 10 MB upload limit.");
+        if (!await MatchesImageSignatureAsync(content, contentType!, ct))
+            throw new BadRequestException("The uploaded file is not a valid image.");
 
-        var result = await fileStorageService.SaveAsync(content, fileName, contentType, "gallery", ct);
+        var storedName = Path.GetFileName(fileName) is { Length: > 0 } original
+            ? Path.ChangeExtension(original, extension)
+            : $"image{extension}";
+
+        var result = await fileStorageService.SaveAsync(content, storedName, contentType!, folder, ct);
 
         var image = new GalleryImage
         {
             Url = result.Url,
             FileName = result.FileName,
             SizeBytes = result.SizeBytes,
-            MimeType = contentType,
+            MimeType = contentType!,
             AltText = altText,
             UploadedByUserId = uploadedByUserId,
             CreatedAt = DateTimeOffset.UtcNow
@@ -53,5 +69,26 @@ public class MediaService(IUnitOfWork unitOfWork, IFileStorageService fileStorag
         await fileStorageService.DeleteAsync(image.Url, ct);
         unitOfWork.GalleryImages.Remove(image);
         await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    // A declared content type is just a client-supplied header, so confirm the bytes agree with it.
+    private static async Task<bool> MatchesImageSignatureAsync(Stream content, string contentType, CancellationToken ct)
+    {
+        var header = new byte[12];
+        content.Position = 0;
+        var read = await content.ReadAtLeastAsync(header, header.Length, throwOnEndOfStream: false, ct);
+        content.Position = 0;
+
+        if (read < header.Length)
+            return false;
+
+        return contentType.ToLowerInvariant() switch
+        {
+            "image/jpeg" => header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF,
+            "image/png" => header.AsSpan(0, PngSignature.Length).SequenceEqual(PngSignature),
+            "image/gif" => header.AsSpan(0, 4).SequenceEqual("GIF8"u8),
+            "image/webp" => header.AsSpan(0, 4).SequenceEqual("RIFF"u8) && header.AsSpan(8, 4).SequenceEqual("WEBP"u8),
+            _ => false
+        };
     }
 }

@@ -14,12 +14,14 @@ import { CheckoutCancelPage } from '@/pages/CheckoutCancel'
 import { CheckoutPage } from '@/pages/Checkout'
 import { CheckoutSuccessPage } from '@/pages/CheckoutSuccess'
 import { ForbiddenPage } from '@/pages/Forbidden'
+import { ForgotPasswordPage } from '@/pages/ForgotPassword'
 import { HomePage } from '@/pages/Home'
 import { LoginPage } from '@/pages/Login'
 import { NotFoundPage } from '@/pages/NotFound'
 import { ProductDetailPage } from '@/pages/ProductDetail'
 import { ProductListPage } from '@/pages/ProductList'
 import { RegisterPage } from '@/pages/Register'
+import { ResetPasswordPage } from '@/pages/ResetPassword'
 import { StaticPagePage } from '@/pages/StaticPage'
 import { WishlistPage } from '@/pages/Wishlist'
 import { AdminRoute } from './AdminRoute'
@@ -79,6 +81,8 @@ export const router = createBrowserRouter([
     children: [
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
+      { path: '/forgot-password', element: <ForgotPasswordPage /> },
+      { path: '/reset-password', element: <ResetPasswordPage /> },
     ],
   },
   {

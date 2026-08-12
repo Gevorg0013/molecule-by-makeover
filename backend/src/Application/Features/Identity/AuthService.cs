@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Application.Common.Options;
@@ -15,6 +16,10 @@ public class AuthService(
     IPasswordHasherService passwordHasher,
     IValidator<RegisterRequest> registerValidator,
     IValidator<LoginRequest> loginValidator,
+    IValidator<ForgotPasswordRequest> forgotPasswordValidator,
+    IValidator<ResetPasswordRequest> resetPasswordValidator,
+    IEmailSender emailSender,
+    IConfiguration configuration,
     IOptions<JwtOptions> jwtOptions) : IAuthService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
@@ -125,6 +130,67 @@ public class AuthService(
 
         existingToken.RevokedAt = DateTimeOffset.UtcNow;
         unitOfWork.RefreshTokens.Update(existingToken);
+        await unitOfWork.SaveChangesAsync(ct);
+    }
+
+    public async Task ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken ct = default)
+    {
+        await forgotPasswordValidator.ValidateAndThrowAsync(request, ct);
+
+        var user = await unitOfWork.Users.GetByEmailAsync(request.Email.Trim().ToLowerInvariant(), ct);
+        if (user is null || !user.IsActive)
+            return;
+
+        var rawToken = jwtTokenService.GenerateRefreshToken();
+        var resetToken = new PasswordResetToken
+        {
+            UserId = user.Id,
+            TokenHash = jwtTokenService.HashToken(rawToken),
+            ExpiresAt = DateTimeOffset.UtcNow.AddHours(1),
+            CreatedAt = DateTimeOffset.UtcNow
+        };
+        await unitOfWork.PasswordResetTokens.AddAsync(resetToken, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+
+        var baseUrl = configuration["Frontend:BaseUrl"]!.TrimEnd('/');
+        var resetLink = $"{baseUrl}/reset-password?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(rawToken)}";
+
+        try
+        {
+
+            await emailSender.SendAsync(
+                user.Email,
+                "Reset your Molecule by Makeover password",
+                $"<p>We received a request to reset your password.</p><p><a href=\"{resetLink}\">Click here to reset your password</a></p><p>This link will expire in 1 hour. If you did not request this, you can safely ignore this email.</p>",
+                ct);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            throw;
+        }
+
+    }
+
+    public async Task ResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct = default)
+    {
+        await resetPasswordValidator.ValidateAndThrowAsync(request, ct);
+
+        var user = await unitOfWork.Users.GetByEmailAsync(request.Email.Trim().ToLowerInvariant(), ct);
+        var tokenHash = jwtTokenService.HashToken(request.Token);
+        var resetToken = await unitOfWork.PasswordResetTokens.GetByTokenHashAsync(tokenHash, ct);
+
+        if (user is null || resetToken is null || resetToken.UserId != user.Id
+            || resetToken.UsedAt is not null || resetToken.ExpiresAt <= DateTimeOffset.UtcNow)
+            throw new BadRequestException("Invalid or expired reset token.");
+
+        user.PasswordHash = passwordHasher.Hash(request.NewPassword);
+        unitOfWork.Users.Update(user);
+
+        resetToken.UsedAt = DateTimeOffset.UtcNow;
+        unitOfWork.PasswordResetTokens.Update(resetToken);
+
+        await RevokeAllActiveTokensForUserAsync(user.Id, ct);
         await unitOfWork.SaveChangesAsync(ct);
     }
 

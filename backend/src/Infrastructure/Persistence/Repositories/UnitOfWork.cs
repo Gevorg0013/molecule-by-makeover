@@ -7,6 +7,7 @@ public class UnitOfWork(AppDbContext context) : IUnitOfWork
     private IUserRepository? _users;
     private IRoleRepository? _roles;
     private IRefreshTokenRepository? _refreshTokens;
+    private IPasswordResetTokenRepository? _passwordResetTokens;
     private ILanguageRepository? _languages;
     private ICategoryRepository? _categories;
     private IProductRepository? _products;
@@ -27,6 +28,7 @@ public class UnitOfWork(AppDbContext context) : IUnitOfWork
     public IUserRepository Users => _users ??= new UserRepository(context);
     public IRoleRepository Roles => _roles ??= new RoleRepository(context);
     public IRefreshTokenRepository RefreshTokens => _refreshTokens ??= new RefreshTokenRepository(context);
+    public IPasswordResetTokenRepository PasswordResetTokens => _passwordResetTokens ??= new PasswordResetTokenRepository(context);
     public ILanguageRepository Languages => _languages ??= new LanguageRepository(context);
     public ICategoryRepository Categories => _categories ??= new CategoryRepository(context);
     public IProductRepository Products => _products ??= new ProductRepository(context);

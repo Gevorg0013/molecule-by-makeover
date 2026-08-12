@@ -16,6 +16,7 @@ public class User : BaseEntity
     public Language? PreferredLanguage { get; set; }
     public ICollection<UserRole> UserRoles { get; set; } = [];
     public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
+    public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = [];
     public ICollection<Order> Orders { get; set; } = [];
     public ICollection<Review> Reviews { get; set; } = [];
     public Wishlist? Wishlist { get; set; }

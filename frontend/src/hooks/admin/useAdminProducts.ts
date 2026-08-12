@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 import { adminProductsApi } from '@/api/admin/products'
+import { formatApiError } from '@/lib/apiError'
 import type { ApiError, ProductUpsertRequest } from '@/types/dto'
 
 const KEY = ['admin', 'products']
@@ -23,7 +24,7 @@ export function useCreateProduct() {
   return useMutation({
     mutationFn: (body: ProductUpsertRequest) => adminProductsApi.create(body),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
-    onError: (error: ApiError) => toast.error(error.detail ?? error.title),
+    onError: (error: ApiError) => toast.error(formatApiError(error)),
   })
 }
 
@@ -36,7 +37,7 @@ export function useUpdateProduct() {
       void queryClient.invalidateQueries({ queryKey: KEY })
       void queryClient.invalidateQueries({ queryKey: [...KEY, args.id] })
     },
-    onError: (error: ApiError) => toast.error(error.detail ?? error.title),
+    onError: (error: ApiError) => toast.error(formatApiError(error)),
   })
 }
 
@@ -45,6 +46,15 @@ export function useDeleteProduct() {
   return useMutation({
     mutationFn: (id: string) => adminProductsApi.remove(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: KEY }),
+    onError: (error: ApiError) => toast.error(error.detail ?? error.title),
+  })
+}
+
+// The resulting URL is held in form state and persisted by the product upsert, so there is
+// no product-scoped cache to invalidate here.
+export function useUploadProductMainImage() {
+  return useMutation({
+    mutationFn: (file: File) => adminProductsApi.uploadMainImage(file),
     onError: (error: ApiError) => toast.error(error.detail ?? error.title),
   })
 }

@@ -2,11 +2,15 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MoleculeByMakeover.API.Middleware;
 using MoleculeByMakeover.Application;
 using MoleculeByMakeover.Application.Common.Interfaces;
+using MoleculeByMakeover.Application.Common.Options;
 using MoleculeByMakeover.Infrastructure;
 using MoleculeByMakeover.Infrastructure.Common;
 using MoleculeByMakeover.Infrastructure.Persistence;
@@ -123,7 +127,24 @@ app.UseSerilogRequestLogging();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 //app.UseHttpsRedirection();
-app.UseStaticFiles();
+
+// Uploads are served from the configured storage root rather than via the default web root:
+// UseStaticFiles silently serves nothing when wwwroot is absent at startup (a fresh clone or a
+// container without the volume mounted), which turns every uploaded image into a 404. It also
+// 404s any extension it cannot map to a content type, so .webp is registered explicitly.
+var fileStorage = app.Services.GetRequiredService<IOptions<FileStorageOptions>>().Value;
+var uploadsRoot = Path.GetFullPath(fileStorage.RootPath, app.Environment.ContentRootPath);
+Directory.CreateDirectory(uploadsRoot);
+
+var contentTypeProvider = new FileExtensionContentTypeProvider();
+contentTypeProvider.Mappings[".webp"] = "image/webp";
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsRoot),
+    RequestPath = fileStorage.PublicBaseUrl.TrimEnd('/'),
+    ContentTypeProvider = contentTypeProvider
+});
 
 app.UseCors("Default");
 

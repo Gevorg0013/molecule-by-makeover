@@ -697,6 +697,41 @@ namespace MoleculeByMakeover.Infrastructure.Persistence.Migrations
                     b.ToTable("PageTranslations", (string)null);
                 });
 
+            modelBuilder.Entity("MoleculeByMakeover.Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordResetTokens", (string)null);
+                });
+
             modelBuilder.Entity("MoleculeByMakeover.Domain.Entities.ProcessedPaymentEvent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1387,6 +1422,17 @@ namespace MoleculeByMakeover.Infrastructure.Persistence.Migrations
                     b.Navigation("Page");
                 });
 
+            modelBuilder.Entity("MoleculeByMakeover.Domain.Entities.PasswordResetToken", b =>
+                {
+                    b.HasOne("MoleculeByMakeover.Domain.Entities.User", "User")
+                        .WithMany("PasswordResetTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MoleculeByMakeover.Domain.Entities.Product", b =>
                 {
                     b.HasOne("MoleculeByMakeover.Domain.Entities.Category", "Category")
@@ -1596,6 +1642,8 @@ namespace MoleculeByMakeover.Infrastructure.Persistence.Migrations
                     b.Navigation("Cart");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("PasswordResetTokens");
 
                     b.Navigation("RefreshTokens");
 

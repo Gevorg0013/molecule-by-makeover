@@ -58,6 +58,20 @@ public class AuthController(IAuthService authService, ICartService cartService) 
         return NoContent();
     }
 
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request, CancellationToken ct)
+    {
+        await authService.ForgotPasswordAsync(request, ct);
+        return NoContent();
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordRequest request, CancellationToken ct)
+    {
+        await authService.ResetPasswordAsync(request, ct);
+        return NoContent();
+    }
+
     [HttpGet("me")]
     [Authorize]
     public ActionResult Me() => Ok(new

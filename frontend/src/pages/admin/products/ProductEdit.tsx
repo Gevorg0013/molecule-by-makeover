@@ -1,5 +1,5 @@
-import { type FormEvent, useEffect, useState } from 'react'
-import { Trash2, Upload } from 'lucide-react'
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'react'
+import { Loader2, Trash2, Upload } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -20,9 +20,15 @@ import {
   useDeleteProductImage,
   useUpdateProduct,
   useUploadProductImage,
+  useUploadProductMainImage,
 } from '@/hooks/admin/useAdminProducts'
 import { DiscountType, LANGUAGES, discountTypeLabels, type LanguageCode } from '@/types/enums'
 import type { ProductTranslationInput, ProductUpsertRequest } from '@/types/dto'
+
+// Kept in step with the server-side allow-list so the admin gets immediate feedback instead of
+// waiting on a round trip; the API remains the authority.
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 
 function emptyTranslations(): Record<LanguageCode, ProductTranslationInput> {
   return Object.fromEntries(
@@ -43,7 +49,9 @@ export function AdminProductEditPage() {
   const createProduct = useCreateProduct()
   const updateProduct = useUpdateProduct()
   const uploadImage = useUploadProductImage()
+  const uploadMainImage = useUploadProductMainImage()
   const deleteImage = useDeleteProductImage()
+  const mainImageInputRef = useRef<HTMLInputElement>(null)
 
   const [sku, setSku] = useState('')
   const [categoryId, setCategoryId] = useState('')
@@ -95,8 +103,43 @@ export function AdminProductEditPage() {
     setTranslations((prev) => ({ ...prev, [lang]: { ...prev[lang], ...patch } }))
   }
 
+  function handleMainImageChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      toast.error(t('admin.invalidImageType'))
+      return
+    }
+    if (file.size === 0) {
+      toast.error(t('admin.emptyImage'))
+      return
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error(t('admin.imageTooLarge'))
+      return
+    }
+
+    uploadMainImage.mutate(file, { onSuccess: (image) => setMainImageUrl(image.url) })
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
+
+    // Inactive tab panels are unmounted, so the `required` attributes on the English inputs
+    // never fire when the admin submits from the HY or RU tab - check it explicitly.
+    if (!translations.en.name.trim() || !translations.en.slug.trim()) {
+      toast.error(t('admin.englishTranslationRequired'))
+      return
+    }
+
+    // Languages the admin never filled in are omitted rather than sent as blank rows, so each
+    // language can be entered independently instead of all three being mandatory.
+    const filledTranslations = LANGUAGES.map((lang) => translations[lang]).filter(
+      (tr) => tr.name.trim() !== '' || tr.slug.trim() !== '',
+    )
+
     const body: ProductUpsertRequest = {
       sku,
       categoryId,
@@ -110,7 +153,7 @@ export function AdminProductEditPage() {
       isBestSeller,
       isActive,
       tags: tags.split(',').map((s) => s.trim()).filter(Boolean),
-      translations: LANGUAGES.map((lang) => translations[lang]),
+      translations: filledTranslations,
     }
 
     if (id) {
@@ -189,11 +232,45 @@ export function AdminProductEditPage() {
           </div>
           <div className="sm:col-span-2">
             <Label className="mb-1.5">{t('admin.mainImage')}</Label>
-            <div className="flex items-center gap-3">
-              <Input value={mainImageUrl} onChange={(e) => setMainImageUrl(e.target.value)} placeholder="https://…" />
-              <div className="size-9 shrink-0 overflow-hidden rounded-md border bg-muted">
+            <div className="flex items-start gap-3">
+              <div className="size-24 shrink-0 overflow-hidden rounded-md border bg-muted">
                 <SafeImage src={mainImageUrl} alt="" />
               </div>
+              <div className="flex flex-col items-start gap-2">
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={uploadMainImage.isPending}
+                    onClick={() => mainImageInputRef.current?.click()}
+                  >
+                    {uploadMainImage.isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Upload className="size-4" />
+                    )}
+                    {uploadMainImage.isPending
+                      ? t('common.uploading')
+                      : mainImageUrl
+                        ? t('admin.replaceImage')
+                        : t('admin.chooseImage')}
+                  </Button>
+                  {mainImageUrl && !uploadMainImage.isPending && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setMainImageUrl('')}>
+                      {t('common.remove')}
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">{t('admin.imageUploadHint')}</p>
+              </div>
+              <input
+                ref={mainImageInputRef}
+                type="file"
+                accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                className="hidden"
+                onChange={handleMainImageChange}
+              />
             </div>
           </div>
           <div className="sm:col-span-3">

@@ -79,3 +79,17 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
             .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+public class PasswordResetTokenConfiguration : IEntityTypeConfiguration<PasswordResetToken>
+{
+    public void Configure(EntityTypeBuilder<PasswordResetToken> builder)
+    {
+        builder.ToTable("PasswordResetTokens");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.TokenHash).IsRequired();
+        builder.HasIndex(x => x.TokenHash).IsUnique();
+
+        builder.HasOne(x => x.User).WithMany(u => u.PasswordResetTokens)
+            .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+    }
+}

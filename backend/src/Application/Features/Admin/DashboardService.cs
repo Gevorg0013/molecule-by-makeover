@@ -18,13 +18,28 @@ public class DashboardService(IUnitOfWork unitOfWork) : IDashboardService
         var lowStockProducts = await unitOfWork.Products.Query().CountAsync(p => !p.IsDeleted && p.Stock <= 5, ct);
 
         var topProducts = await unitOfWork.Orders.Query()
-            .Where(o => o.PaymentStatus == PaymentStatus.Paid)
-            .SelectMany(o => o.Items)
-            .GroupBy(i => new { i.ProductId, i.ProductNameSnapshot })
-            .Select(g => new TopProductDto(g.Key.ProductId ?? Guid.Empty, g.Key.ProductNameSnapshot, g.Sum(i => i.Quantity), g.Sum(i => i.LineTotal)))
-            .OrderByDescending(p => p.UnitsSold)
-            .Take(5)
-            .ToListAsync(ct);
+     .Where(o => o.PaymentStatus == PaymentStatus.Paid)
+     .SelectMany(o => o.Items)
+     .GroupBy(i => new
+     {
+         i.ProductId,
+         i.ProductNameSnapshot
+     })
+     .Select(g => new
+     {
+         ProductId = g.Key.ProductId,
+         ProductName = g.Key.ProductNameSnapshot,
+         UnitsSold = g.Sum(i => i.Quantity),
+         Revenue = g.Sum(i => i.LineTotal)
+     })
+     .OrderByDescending(x => x.UnitsSold)
+     .Take(5)
+     .Select(x => new TopProductDto(
+         x.ProductId ?? Guid.Empty,
+         x.ProductName,
+         x.UnitsSold,
+         x.Revenue))
+     .ToListAsync(ct);
 
         return new DashboardStatsDto(totalRevenue, totalOrders, pendingOrders, totalCustomers, totalProducts, lowStockProducts, topProducts);
     }

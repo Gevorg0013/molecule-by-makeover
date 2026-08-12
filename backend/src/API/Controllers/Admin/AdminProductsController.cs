@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MoleculeByMakeover.Application.Features.Catalog;
 using MoleculeByMakeover.Application.Features.Media;
 using MoleculeByMakeover.Shared.Constants;
+using MoleculeByMakeover.Shared.Exceptions;
 
 namespace MoleculeByMakeover.API.Controllers.Admin;
 
@@ -10,6 +11,8 @@ namespace MoleculeByMakeover.API.Controllers.Admin;
 [Authorize(Roles = RoleNames.Admin)]
 public class AdminProductsController(IProductService productService, IMediaService mediaService) : ApiControllerBase
 {
+    private const int MaxUploadBytes = 10 * 1024 * 1024;
+
     [HttpGet]
     public async Task<ActionResult<List<ProductAdminDto>>> GetAll(CancellationToken ct) =>
         Ok(await productService.GetAllAdminAsync(ct));
@@ -39,11 +42,29 @@ public class AdminProductsController(IProductService productService, IMediaServi
         return NoContent();
     }
 
+    // Not scoped to a product id: the admin form uploads the main image before the product exists
+    // on create, then persists the returned URL as part of the upsert payload.
+    [HttpPost("main-image")]
+    [RequestSizeLimit(MaxUploadBytes)]
+    public async Task<ActionResult<GalleryImageDto>> UploadMainImage(IFormFile file, CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+            throw new BadRequestException("No file was uploaded.");
+
+        await using var stream = file.OpenReadStream();
+        var uploaded = await mediaService.UploadAsync(stream, file.FileName, file.ContentType, CurrentUser.UserId, null, MediaFolders.Products, ct);
+        return Ok(uploaded);
+    }
+
     [HttpPost("{id:guid}/images")]
+    [RequestSizeLimit(MaxUploadBytes)]
     public async Task<ActionResult<ProductImageDto>> UploadImage(Guid id, IFormFile file, CancellationToken ct)
     {
+        if (file is null || file.Length == 0)
+            throw new BadRequestException("No file was uploaded.");
+
         await using var stream = file.OpenReadStream();
-        var uploaded = await mediaService.UploadAsync(stream, file.FileName, file.ContentType, CurrentUser.UserId, null, ct);
+        var uploaded = await mediaService.UploadAsync(stream, file.FileName, file.ContentType, CurrentUser.UserId, null, MediaFolders.Products, ct);
         var image = await productService.AddImageAsync(id, uploaded.Url, file.FileName, ct);
         return Ok(image);
     }
