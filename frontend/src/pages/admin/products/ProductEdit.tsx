@@ -163,9 +163,9 @@ export function AdminProductEditPage() {
       )
     } else {
       createProduct.mutate(body, {
-        onSuccess: (res) => {
+        onSuccess: () => {
           toast.success(t('common.save'))
-          navigate(`/admin/products/${res.id}`)
+          navigate('/admin/products')
         },
       })
     }
