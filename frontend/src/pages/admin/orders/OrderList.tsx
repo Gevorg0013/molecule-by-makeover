@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { OrderStatusBadge, PaymentStatusBadge } from '@/components/common/StatusBadge'
 import { Button } from '@/components/ui/button'
@@ -38,7 +39,7 @@ export function AdminOrderListPage() {
         </SelectContent>
       </Select>
 
-      {isLoading && <p className="text-sm text-muted-foreground">{t('common.loading')}</p>}
+      {isLoading && <LoadingState />}
       <Table>
         <TableHeader>
           <TableRow>

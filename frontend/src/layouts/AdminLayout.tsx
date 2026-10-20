@@ -16,6 +16,7 @@ import { Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 
+import { RouteLoadingFallback } from '@/components/common/Spinner'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
@@ -109,7 +110,7 @@ export function AdminLayout() {
           </Link>
         </header>
         <main className="mx-auto max-w-6xl p-4 sm:p-6">
-          <Suspense fallback={<p className="text-sm text-muted-foreground">{t('common.loading')}</p>}>
+          <Suspense fallback={<RouteLoadingFallback />}>
             <Outlet />
           </Suspense>
         </main>

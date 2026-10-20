@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
+import { PendingRoute } from '@/components/common/Spinner'
 import { isAdmin, useAuthStore } from '@/store/authStore'
 import { ForbiddenPage } from '@/pages/Forbidden'
 
@@ -9,7 +10,7 @@ export function AdminRoute() {
   const isBootstrapped = useAuthStore((s) => s.isBootstrapped)
   const location = useLocation()
 
-  if (!isBootstrapped) return null
+  if (!isBootstrapped) return <PendingRoute />
   if (!accessToken) return <Navigate to="/login" state={{ from: location }} replace />
   if (!isAdmin(user)) return <ForbiddenPage />
 

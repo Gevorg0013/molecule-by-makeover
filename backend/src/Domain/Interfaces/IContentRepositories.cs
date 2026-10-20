@@ -4,7 +4,7 @@ namespace MoleculeByMakeover.Domain.Interfaces;
 
 public interface IBlogPostRepository : IRepository<BlogPost>
 {
-    Task<BlogPost?> GetBySlugAsync(string slug, int languageId, CancellationToken ct = default);
+    Task<BlogPost?> GetBySlugAsync(string slug, CancellationToken ct = default);
 }
 
 public interface IPageRepository : IRepository<Page>

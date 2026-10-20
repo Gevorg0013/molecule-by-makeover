@@ -7,7 +7,7 @@ public class ProductUpsertRequestValidator : AbstractValidator<ProductUpsertRequ
 {
     public ProductUpsertRequestValidator()
     {
-        RuleFor(x => x.Sku).NotEmpty().MaximumLength(64);
+        RuleFor(x => x.Sku).NotEmpty().MaximumLength(64).WithName("Product Code");
         RuleFor(x => x.CategoryId).NotEmpty();
         RuleFor(x => x.Price).GreaterThan(0);
         RuleFor(x => x.Stock).GreaterThanOrEqualTo(0);

@@ -30,7 +30,7 @@ public class BlogService(
 
     public async Task<BlogPostDetailDto> GetBySlugAsync(string slug, CancellationToken ct = default)
     {
-        var post = await unitOfWork.BlogPosts.GetBySlugAsync(slug, currentLanguage.LanguageId, ct)
+        var post = await unitOfWork.BlogPosts.GetBySlugAsync(slug, ct)
             ?? throw new NotFoundException(nameof(BlogPost), slug);
 
         // Drafts and soft-deleted posts must not be reachable from the public site.

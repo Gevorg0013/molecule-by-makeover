@@ -14,18 +14,18 @@ public class ProductRepository(AppDbContext context) : Repository<Product>(conte
             .Include(p => p.Category).ThenInclude(c => c.Translations)
             .Include(p => p.Reviews);
 
-    public async Task<Product?> GetBySlugAsync(string slug, int languageId, CancellationToken ct = default) =>
+    public async Task<Product?> GetBySlugAsync(string slug, CancellationToken ct = default) =>
         await QueryWithTranslations()
-            .FirstOrDefaultAsync(p => p.Translations.Any(t => t.Slug == slug && t.LanguageId == languageId), ct);
+            .FirstOrDefaultAsync(p => p.Translations.Any(t => t.Slug == slug), ct);
 }
 
 public class CategoryRepository(AppDbContext context) : Repository<Category>(context), ICategoryRepository
 {
     public IQueryable<Category> QueryWithTranslations() => DbSet.Include(c => c.Translations).ThenInclude(t => t.Language);
 
-    public async Task<Category?> GetBySlugAsync(string slug, int languageId, CancellationToken ct = default) =>
+    public async Task<Category?> GetBySlugAsync(string slug, CancellationToken ct = default) =>
         await QueryWithTranslations()
-            .FirstOrDefaultAsync(c => c.Translations.Any(t => t.Slug == slug && t.LanguageId == languageId), ct);
+            .FirstOrDefaultAsync(c => c.Translations.Any(t => t.Slug == slug), ct);
 }
 
 public class TagRepository(AppDbContext context) : Repository<Tag>(context), ITagRepository

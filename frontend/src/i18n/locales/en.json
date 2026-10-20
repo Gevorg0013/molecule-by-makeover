@@ -159,6 +159,7 @@
     "newPassword": "New Password",
     "confirmPassword": "Confirm Password",
     "passwordsDontMatch": "Passwords don't match.",
+    "invalidEmail": "Enter a valid email address.",
     "resetPasswordSuccess": "Your password has been reset. You can now sign in.",
     "invalidResetLink": "This password reset link is invalid or has expired.",
     "backToLogin": "Back to sign in"
@@ -240,7 +241,9 @@
     "imageTooLarge": "Image exceeds the 10 MB upload limit.",
     "emptyImage": "The selected file is empty.",
     "englishTranslationRequired": "The English name and slug are required.",
-    "sku": "SKU",
+    "categoryRequired": "Please select a category.",
+    "productCode": "Product Code",
+    "searchProducts": "Search by name or product code…",
     "stock": "Stock",
     "discount": "Discount",
     "featured": "Featured",

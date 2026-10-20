@@ -2,6 +2,7 @@ import { Trash2, Upload } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { SafeImage } from '@/components/common/SafeImage'
 import { useAdminMedia, useDeleteMedia, useUploadMedia } from '@/hooks/admin/useAdminMedia'
@@ -16,7 +17,7 @@ export function AdminMediaPage() {
   return (
     <div>
       <AdminPageHeader title={t('admin.mediaLibrary')} />
-      {isLoading && <p className="text-sm text-muted-foreground">{t('common.loading')}</p>}
+      {isLoading && <LoadingState />}
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
         <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-md border border-dashed text-center text-muted-foreground hover:border-foreground">
           <Upload className="size-6" />

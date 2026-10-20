@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authErrorMessage, useForgotPassword } from '@/hooks/useAuth'
 
+// Messages are i18n keys, translated where they're rendered.
 const schema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().min(1, 'common.required').email('auth.invalidEmail'),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -50,8 +51,8 @@ export function ForgotPasswordPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
         <div>
           <Label className="mb-1.5">{t('common.email')}</Label>
-          <Input type="email" {...register('email')} />
-          {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email.message}</p>}
+          <Input type="email" autoComplete="email" aria-invalid={!!errors.email} {...register('email')} />
+          {errors.email && <p className="mt-1 text-xs text-destructive">{t(errors.email.message ?? '')}</p>}
         </div>
         {forgotPassword.isError && <p className="text-sm text-destructive">{authErrorMessage(forgotPassword.error)}</p>}
         <Button type="submit" size="lg" disabled={forgotPassword.isPending}>

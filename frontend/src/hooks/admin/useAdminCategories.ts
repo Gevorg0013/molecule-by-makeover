@@ -45,3 +45,12 @@ export function useDeleteCategory() {
     onError: (error: ApiError) => toast.error(error.detail ?? error.title),
   })
 }
+
+// The resulting URL is held in form state and persisted by the category upsert, so there is
+// no cache to invalidate here.
+export function useUploadCategoryImage() {
+  return useMutation({
+    mutationFn: (file: File) => adminCategoriesApi.uploadImage(file),
+    onError: (error: ApiError) => toast.error(error.detail ?? error.title),
+  })
+}

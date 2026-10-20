@@ -28,6 +28,15 @@ export function useUpdateBanner() {
   })
 }
 
+// The resulting URL is held in form state and persisted by the banner upsert, so there is
+// no cache to invalidate here.
+export function useUploadBannerImage() {
+  return useMutation({
+    mutationFn: (file: File) => adminBannersApi.uploadImage(file),
+    onError: (error: ApiError) => toast.error(error.detail ?? error.title),
+  })
+}
+
 export function useDeleteBanner() {
   const queryClient = useQueryClient()
   return useMutation({

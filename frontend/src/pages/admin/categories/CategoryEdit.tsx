@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { ImageUploadField } from '@/components/admin/ImageUploadField'
 import { TranslationTabs } from '@/components/admin/TranslationTabs'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -16,6 +17,7 @@ import {
   useAdminCategory,
   useCreateCategory,
   useUpdateCategory,
+  useUploadCategoryImage,
 } from '@/hooks/admin/useAdminCategories'
 import { LANGUAGES, type LanguageCode } from '@/types/enums'
 import type { CategoryTranslationInput, CategoryUpsertRequest } from '@/types/dto'
@@ -36,6 +38,7 @@ export function AdminCategoryEditPage() {
   const { data: categories } = useAdminCategories()
   const createCategory = useCreateCategory()
   const updateCategory = useUpdateCategory()
+  const uploadImage = useUploadCategoryImage()
 
   const [parentCategoryId, setParentCategoryId] = useState(NONE)
   const [imageUrl, setImageUrl] = useState('')
@@ -111,10 +114,7 @@ export function AdminCategoryEditPage() {
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label className="mb-1.5">Image URL</Label>
-            <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
-          </div>
+          <ImageUploadField label="Image" value={imageUrl} onChange={setImageUrl} uploader={uploadImage} />
           <div>
             <Label className="mb-1.5">Sort Order</Label>
             <Input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
@@ -160,7 +160,7 @@ export function AdminCategoryEditPage() {
         </section>
 
         <div>
-          <Button type="submit" size="lg" disabled={isSaving}>
+          <Button type="submit" size="lg" disabled={isSaving || uploadImage.isPending}>
             {isSaving ? t('common.saving') : t('common.save')}
           </Button>
         </div>

@@ -4,12 +4,18 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { ImageUploadField } from '@/components/admin/ImageUploadField'
 import { TranslationTabs } from '@/components/admin/TranslationTabs'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useAdminBanners, useCreateBanner, useUpdateBanner } from '@/hooks/admin/useAdminBanners'
+import {
+  useAdminBanners,
+  useCreateBanner,
+  useUpdateBanner,
+  useUploadBannerImage,
+} from '@/hooks/admin/useAdminBanners'
 import { LANGUAGES, type LanguageCode } from '@/types/enums'
 import type { BannerTranslationInput, BannerUpsertRequest } from '@/types/dto'
 
@@ -27,6 +33,7 @@ export function AdminBannerEditPage() {
   const banner = banners?.find((b) => b.id === id)
   const createBanner = useCreateBanner()
   const updateBanner = useUpdateBanner()
+  const uploadImage = useUploadBannerImage()
 
   const [imageUrl, setImageUrl] = useState('')
   const [linkUrl, setLinkUrl] = useState('')
@@ -62,6 +69,12 @@ export function AdminBannerEditPage() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
+
+    // The upload field has no native `required`, so guard against saving a banner with no image.
+    if (!imageUrl) {
+      toast.error(t('admin.chooseImage'))
+      return
+    }
     const body: BannerUpsertRequest = {
       imageUrl,
       linkUrl: linkUrl || null,
@@ -90,10 +103,15 @@ export function AdminBannerEditPage() {
       <AdminPageHeader title={id ? t('common.edit') : t('admin.newBanner')} />
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
         <section className="grid gap-4 sm:grid-cols-3">
-          <div className="sm:col-span-2">
-            <Label className="mb-1.5">Image URL</Label>
-            <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} required />
-          </div>
+          <ImageUploadField
+            label="Image"
+            value={imageUrl}
+            onChange={setImageUrl}
+            uploader={uploadImage}
+            removable={false}
+            previewClassName="h-24 w-40"
+            className="sm:col-span-2"
+          />
           <div>
             <Label className="mb-1.5">Sort Order</Label>
             <Input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
@@ -148,7 +166,7 @@ export function AdminBannerEditPage() {
         </section>
 
         <div>
-          <Button type="submit" size="lg" disabled={isSaving}>
+          <Button type="submit" size="lg" disabled={isSaving || uploadImage.isPending}>
             {isSaving ? t('common.saving') : t('common.save')}
           </Button>
         </div>

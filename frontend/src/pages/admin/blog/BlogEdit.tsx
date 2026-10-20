@@ -4,13 +4,14 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { ImageUploadField } from '@/components/admin/ImageUploadField'
 import { TranslationTabs } from '@/components/admin/TranslationTabs'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useAdminBlogPost, useCreateBlogPost, useUpdateBlogPost } from '@/hooks/admin/useAdminBlog'
+import { useAdminBlogPost, useCreateBlogPost, useUpdateBlogPost, useUploadBlogImage } from '@/hooks/admin/useAdminBlog'
 import { LANGUAGES, type LanguageCode } from '@/types/enums'
 import type { BlogPostUpsertRequest, BlogTranslationInput } from '@/types/dto'
 
@@ -27,6 +28,7 @@ export function AdminBlogEditPage() {
   const { data: post } = useAdminBlogPost(id)
   const createPost = useCreateBlogPost()
   const updatePost = useUpdateBlogPost()
+  const uploadImage = useUploadBlogImage()
 
   const [coverImageUrl, setCoverImageUrl] = useState('')
   const [isPublished, setIsPublished] = useState(false)
@@ -81,10 +83,13 @@ export function AdminBlogEditPage() {
       <AdminPageHeader title={id ? t('common.edit') : t('admin.newPost')} />
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
         <section className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <Label className="mb-1.5">Cover Image URL</Label>
-            <Input value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} />
-          </div>
+          <ImageUploadField
+            label="Cover Image"
+            value={coverImageUrl}
+            onChange={setCoverImageUrl}
+            uploader={uploadImage}
+            previewClassName="h-24 w-40"
+          />
           <label className="flex items-center gap-2 self-end pb-2 text-sm">
             <Checkbox checked={isPublished} onCheckedChange={(v) => setIsPublished(!!v)} />
             {t('common.active')}
@@ -135,7 +140,7 @@ export function AdminBlogEditPage() {
         </section>
 
         <div>
-          <Button type="submit" size="lg" disabled={isSaving}>
+          <Button type="submit" size="lg" disabled={isSaving || uploadImage.isPending}>
             {isSaving ? t('common.saving') : t('common.save')}
           </Button>
         </div>

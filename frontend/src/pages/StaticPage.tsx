@@ -1,15 +1,14 @@
-import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { usePage } from '@/hooks/usePages'
 import { NotFoundPage } from './NotFound'
 
 export function StaticPagePage() {
-  const { t } = useTranslation()
   const { key } = useParams()
   const { data: page, isLoading, isError } = usePage(key)
 
-  if (isLoading) return <div className="px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>
+  if (isLoading) return <LoadingState variant="page" />
   if (isError || !page) return <NotFoundPage />
 
   return (

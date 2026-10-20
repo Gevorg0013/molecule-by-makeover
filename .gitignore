@@ -26,3 +26,6 @@ appsettings.*.local.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Local curl cookie jars from manual API testing (contain auth tokens)
+cjA.txt

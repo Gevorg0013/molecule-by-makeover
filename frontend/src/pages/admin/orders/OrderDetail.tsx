@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { OrderStatusBadge, PaymentStatusBadge } from '@/components/common/StatusBadge'
 import { Button } from '@/components/ui/button'
@@ -16,7 +17,7 @@ export function AdminOrderDetailPage() {
   const { data: order, isLoading } = useAdminOrder(orderNumber)
   const updateStatus = useUpdateOrderStatus()
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+  if (isLoading) return <LoadingState />
   if (!order) return null
 
   const nextStatuses = orderStatusTransitions[order.status]

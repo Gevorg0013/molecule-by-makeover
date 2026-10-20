@@ -127,6 +127,13 @@ export function AdminProductEditPage() {
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
 
+    // The category Select has no native `required`, and an empty string can't bind to the API's
+    // Guid, which fails the whole request body - so catch it here with a readable message.
+    if (!categoryId) {
+      toast.error(t('admin.categoryRequired'))
+      return
+    }
+
     // Inactive tab panels are unmounted, so the `required` attributes on the English inputs
     // never fire when the admin submits from the HY or RU tab - check it explicitly.
     if (!translations.en.name.trim() || !translations.en.slug.trim()) {
@@ -179,7 +186,7 @@ export function AdminProductEditPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
         <section className="grid gap-4 sm:grid-cols-3">
           <div>
-            <Label className="mb-1.5">{t('admin.sku')}</Label>
+            <Label className="mb-1.5">{t('admin.productCode')}</Label>
             <Input value={sku} onChange={(e) => setSku(e.target.value)} required />
           </div>
           <div>

@@ -31,7 +31,7 @@ public class CategoryService(
 
     public async Task<CategoryDto> GetBySlugAsync(string slug, CancellationToken ct = default)
     {
-        var category = await unitOfWork.Categories.GetBySlugAsync(slug, currentLanguage.LanguageId, ct)
+        var category = await unitOfWork.Categories.GetBySlugAsync(slug, ct)
             ?? throw new NotFoundException(nameof(Category), slug);
 
         return ToDto(category, []);

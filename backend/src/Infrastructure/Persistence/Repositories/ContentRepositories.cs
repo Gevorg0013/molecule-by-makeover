@@ -6,9 +6,9 @@ namespace MoleculeByMakeover.Infrastructure.Persistence.Repositories;
 
 public class BlogPostRepository(AppDbContext context) : Repository<BlogPost>(context), IBlogPostRepository
 {
-    public async Task<BlogPost?> GetBySlugAsync(string slug, int languageId, CancellationToken ct = default) =>
+    public async Task<BlogPost?> GetBySlugAsync(string slug, CancellationToken ct = default) =>
         await DbSet.Include(b => b.Translations)
-            .FirstOrDefaultAsync(b => b.Translations.Any(t => t.Slug == slug && t.LanguageId == languageId), ct);
+            .FirstOrDefaultAsync(b => b.Translations.Any(t => t.Slug == slug), ct);
 }
 
 public class PageRepository(AppDbContext context) : Repository<Page>(context), IPageRepository

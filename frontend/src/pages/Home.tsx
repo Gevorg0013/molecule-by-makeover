@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
+import { HeroCarousel } from '@/components/storefront/HeroCarousel'
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { ProductGridSkeleton } from '@/components/storefront/ProductCardSkeleton'
 import { SafeImage } from '@/components/common/SafeImage'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useActiveBanners } from '@/hooks/useBanners'
 import { useCategories } from '@/hooks/useCategories'
@@ -17,28 +17,12 @@ export function HomePage() {
   const { data: featured, isLoading: featuredLoading } = useProductList({ featuredOnly: true, pageSize: 8 })
   const { data: bestSellers, isLoading: bestSellersLoading } = useProductList({ bestSellerOnly: true, pageSize: 8 })
 
-  const hero = banners?.[0]
-
   return (
     <div>
       {bannersLoading ? (
         <Skeleton className="min-h-[60vh] w-full rounded-none" />
       ) : (
-        <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden bg-secondary/50">
-          {hero && (
-            <div className="absolute inset-0">
-              <SafeImage src={hero.imageUrl} alt={hero.title ?? t('brand.name')} priority />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative z-10 mx-auto max-w-2xl px-4 text-center text-white">
-            <h1 className="font-serif text-4xl sm:text-5xl">{hero?.title ?? t('brand.name')}</h1>
-            <p className="mt-3 text-lg text-white/90">{hero?.subtitle ?? t('brand.tagline')}</p>
-            <Button size="lg" variant="accent" className="mt-6" asChild>
-              <Link to={hero?.linkUrl ?? '/products'}>{hero?.ctaText ?? t('home.shopNow')}</Link>
-            </Button>
-          </div>
-        </section>
+        <HeroCarousel banners={banners ?? []} />
       )}
 
       {(categoriesLoading || (categories && categories.length > 0)) && (

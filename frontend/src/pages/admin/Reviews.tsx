@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { RatingStars } from '@/components/storefront/RatingStars'
 import { Badge } from '@/components/ui/badge'
@@ -35,7 +36,7 @@ export function AdminReviewsPage() {
         </SelectContent>
       </Select>
 
-      {isLoading && <p className="text-sm text-muted-foreground">{t('common.loading')}</p>}
+      {isLoading && <LoadingState />}
       <Table>
         <TableHeader>
           <TableRow>

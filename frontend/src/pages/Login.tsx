@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { authErrorMessage, useLogin } from '@/hooks/useAuth'
 
+// Messages are i18n keys, translated where they're rendered.
 const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+  email: z.string().trim().min(1, 'common.required').email('auth.invalidEmail'),
+  password: z.string().min(1, 'common.required'),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -45,12 +46,12 @@ export function LoginPage() {
         <div>
           <Label className="mb-1.5">{t('common.email')}</Label>
           <Input type="email" {...register('email')} />
-          {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email.message}</p>}
+          {errors.email && <p className="mt-1 text-xs text-destructive">{t(errors.email.message ?? '')}</p>}
         </div>
         <div>
           <Label className="mb-1.5">{t('auth.password')}</Label>
           <Input type="password" {...register('password')} />
-          {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>}
+          {errors.password && <p className="mt-1 text-xs text-destructive">{t(errors.password.message ?? '')}</p>}
           <Link to="/forgot-password" className="mt-1.5 inline-block text-sm text-muted-foreground hover:underline">
             {t('auth.forgotPasswordLink')}
           </Link>

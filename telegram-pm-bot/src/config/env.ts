@@ -22,7 +22,7 @@ export const config = {
   sessionFile: process.env.SESSION_FILE ?? path.join(projectRoot, 'data', 'telegram.session'),
   dbFile: process.env.DB_FILE ?? path.join(projectRoot, 'data', 'pm.sqlite'),
   workingDir: path.resolve(process.env.WORKING_DIR ?? path.join(projectRoot, '..')),
-  model: process.env.CLAUDE_MODEL ?? 'claude-opus-4-8',
+  model: process.env.CLAUDE_MODEL ?? 'claude-opus-5-5',
   /**
    * Tool permission decisions are actually made by the canUseTool callback in
    * agents/agentExecutor.ts (allow everything except destructive commands,

@@ -1,16 +1,15 @@
-import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { SafeImage } from '@/components/common/SafeImage'
 import { useBlogPost } from '@/hooks/useBlog'
 import { formatDate } from '@/lib/date'
 
 export function BlogPostPage() {
-  const { t } = useTranslation()
   const { slug } = useParams()
   const { data: post, isLoading } = useBlogPost(slug)
 
-  if (isLoading) return <div className="px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>
+  if (isLoading) return <LoadingState variant="page" />
   if (!post) return null
 
   return (

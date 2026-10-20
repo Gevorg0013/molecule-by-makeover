@@ -1,8 +1,9 @@
 import { lazy } from 'react'
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, type RouteObject } from 'react-router-dom'
 
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AuthLayout } from '@/layouts/AuthLayout'
+import { RootLayout } from '@/layouts/RootLayout'
 import { StorefrontLayout } from '@/layouts/StorefrontLayout'
 import { AccountOrderDetailPage } from '@/pages/account/OrderDetail'
 import { AccountOrdersPage } from '@/pages/account/Orders'
@@ -48,7 +49,7 @@ const AdminPageEditPage = lazy(() => import('@/pages/admin/pages/PageEdit').then
 const AdminMediaPage = lazy(() => import('@/pages/admin/Media').then((m) => ({ default: m.AdminMediaPage })))
 const AdminSettingsPage = lazy(() => import('@/pages/admin/Settings').then((m) => ({ default: m.AdminSettingsPage })))
 
-export const router = createBrowserRouter([
+const routes: RouteObject[] = [
   {
     element: <StorefrontLayout />,
     children: [
@@ -122,4 +123,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-])
+]
+
+export const router = createBrowserRouter([{ element: <RootLayout />, children: routes }])

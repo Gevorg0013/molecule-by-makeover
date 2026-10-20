@@ -1,14 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MoleculeByMakeover.Application.Features.Catalog;
+using MoleculeByMakeover.Application.Features.Media;
 using MoleculeByMakeover.Shared.Constants;
+using MoleculeByMakeover.Shared.Exceptions;
 
 namespace MoleculeByMakeover.API.Controllers.Admin;
 
 [Route("api/v1/admin/categories")]
 [Authorize(Roles = RoleNames.Admin)]
-public class AdminCategoriesController(ICategoryService categoryService) : ApiControllerBase
+public class AdminCategoriesController(ICategoryService categoryService, IMediaService mediaService) : ApiControllerBase
 {
+    private const int MaxUploadBytes = 10 * 1024 * 1024;
+
     [HttpGet]
     public async Task<ActionResult<List<CategoryAdminDto>>> GetAll(CancellationToken ct) =>
         Ok(await categoryService.GetAllAdminAsync(ct));
@@ -36,5 +40,19 @@ public class AdminCategoriesController(ICategoryService categoryService) : ApiCo
     {
         await categoryService.DeleteAsync(id, ct);
         return NoContent();
+    }
+
+    // Not scoped to an id: the admin form uploads the image before the category exists on
+    // create, then persists the returned URL as part of the upsert payload.
+    [HttpPost("image")]
+    [RequestSizeLimit(MaxUploadBytes)]
+    public async Task<ActionResult<GalleryImageDto>> UploadImage(IFormFile file, CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+            throw new BadRequestException("No file was uploaded.");
+
+        await using var stream = file.OpenReadStream();
+        var uploaded = await mediaService.UploadAsync(stream, file.FileName, file.ContentType, CurrentUser.UserId, null, MediaFolders.Categories, ct);
+        return Ok(uploaded);
     }
 }

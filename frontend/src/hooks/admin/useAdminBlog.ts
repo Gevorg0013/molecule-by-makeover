@@ -44,3 +44,12 @@ export function useDeleteBlogPost() {
     onError: (error: ApiError) => toast.error(error.detail ?? error.title),
   })
 }
+
+// The resulting URL is held in form state and persisted by the post upsert, so there is
+// no cache to invalidate here.
+export function useUploadBlogImage() {
+  return useMutation({
+    mutationFn: (file: File) => adminBlogApi.uploadImage(file),
+    onError: (error: ApiError) => toast.error(error.detail ?? error.title),
+  })
+}

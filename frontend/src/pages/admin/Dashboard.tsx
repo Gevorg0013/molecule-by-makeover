@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -10,7 +11,7 @@ export function AdminDashboardPage() {
   const { t } = useTranslation()
   const { data, isLoading } = useAdminDashboard()
 
-  if (isLoading || !data) return <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+  if (isLoading || !data) return <LoadingState />
 
   const tiles = [
     { label: t('admin.totalRevenue'), value: formatCurrency(data.totalRevenue, 'AMD') },

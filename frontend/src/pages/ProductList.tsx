@@ -1,6 +1,6 @@
 import { SearchX } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { ProductCard } from '@/components/storefront/ProductCard'
 import { ProductGridSkeleton } from '@/components/storefront/ProductCardSkeleton'
@@ -17,6 +17,7 @@ import { ProductSort, productSortLabels } from '@/types/enums'
 export function ProductListPage() {
   const { t } = useTranslation()
   const { categorySlug: routeCategorySlug } = useParams()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: categories } = useCategories()
 
@@ -49,6 +50,28 @@ export function ProductListPage() {
     setSearchParams(next)
   }
 
+  // The category lives in the path (/category/:slug), which takes precedence over the query
+  // string, so switching category has to change the path rather than a ?categorySlug param.
+  function selectCategory(slug: string | null) {
+    const next = new URLSearchParams(searchParams)
+    next.delete('categorySlug')
+    next.delete('page')
+    const query = next.toString()
+    navigate({ pathname: slug ? `/category/${slug}` : '/products', search: query ? `?${query}` : '' })
+  }
+
+  // Applied on blur, and Enter blurs, so the filter takes effect either way. Unchanged values are
+  // skipped so tabbing through the fields doesn't reset the page.
+  function applyPrice(key: 'minPrice' | 'maxPrice', raw: string) {
+    const value = raw.trim()
+    if (value === (searchParams.get(key) ?? '')) return
+    updateParam(key, value || null)
+  }
+
+  function clearFilters() {
+    navigate('/products')
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="flex flex-col gap-8 md:flex-row">
@@ -59,7 +82,7 @@ export function ProductListPage() {
               <p className="mb-1.5 text-sm text-muted-foreground">{t('product.category')}</p>
               <div className="flex flex-col gap-0.5">
                 <button
-                  onClick={() => updateParam('categorySlug', null)}
+                  onClick={() => selectCategory(null)}
                   className={cn(
                     'rounded-md px-2 py-1.5 text-left text-sm transition-colors',
                     !categorySlug ? 'bg-accent/15 font-medium text-foreground' : 'text-muted-foreground hover:bg-accent/10 hover:text-foreground',
@@ -70,7 +93,7 @@ export function ProductListPage() {
                 {categories?.map((c) => (
                   <button
                     key={c.id}
-                    onClick={() => updateParam('categorySlug', c.slug)}
+                    onClick={() => selectCategory(c.slug)}
                     className={cn(
                       'rounded-md px-2 py-1.5 text-left text-sm transition-colors',
                       categorySlug === c.slug
@@ -86,18 +109,27 @@ export function ProductListPage() {
             <div>
               <p className="mb-1.5 text-sm text-muted-foreground">{t('product.priceRange')}</p>
               <div className="flex items-center gap-2">
+                {/* Keyed by the URL value so clearing filters (or back/forward) resets what's shown. */}
                 <Input
+                  key={`min-${minPrice}`}
                   type="number"
+                  min={0}
+                  inputMode="numeric"
                   placeholder={t('common.min')}
                   defaultValue={minPrice}
-                  onBlur={(e) => updateParam('minPrice', e.target.value || null)}
+                  onBlur={(e) => applyPrice('minPrice', e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                   className="w-full"
                 />
                 <Input
+                  key={`max-${maxPrice}`}
                   type="number"
+                  min={0}
+                  inputMode="numeric"
                   placeholder={t('common.max')}
                   defaultValue={maxPrice}
-                  onBlur={(e) => updateParam('maxPrice', e.target.value || null)}
+                  onBlur={(e) => applyPrice('maxPrice', e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
                   className="w-full"
                 />
               </div>
@@ -105,7 +137,7 @@ export function ProductListPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setSearchParams(new URLSearchParams())}
+              onClick={clearFilters}
               className="self-start px-0"
             >
               {t('product.clearFilters')}
@@ -139,7 +171,7 @@ export function ProductListPage() {
               icon={SearchX}
               title={t('common.noResults')}
               action={
-                <Button variant="outline" size="sm" onClick={() => setSearchParams(new URLSearchParams())}>
+                <Button variant="outline" size="sm" onClick={clearFilters}>
                   {t('product.clearFilters')}
                 </Button>
               }

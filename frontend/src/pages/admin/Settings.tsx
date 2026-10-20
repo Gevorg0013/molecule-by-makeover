@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -53,7 +54,7 @@ function SettingsGroup({ group }: { group: string }) {
   const [values, setValues] = useState<Record<string, string>>({})
   const [newKey, setNewKey] = useState('')
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+  if (isLoading) return <LoadingState />
 
   return (
     <div className="flex max-w-lg flex-col gap-3">
@@ -116,7 +117,7 @@ function LanguagesPanel() {
   const [code, setCode] = useState('')
   const [name, setName] = useState('')
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+  if (isLoading) return <LoadingState />
 
   return (
     <div className="flex max-w-lg flex-col gap-3">

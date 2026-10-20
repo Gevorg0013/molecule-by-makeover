@@ -2,6 +2,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { SafeImage } from '@/components/common/SafeImage'
 import { Badge } from '@/components/ui/badge'
@@ -27,7 +28,7 @@ export function AdminBannerListPage() {
           </Button>
         }
       />
-      {isLoading && <p className="text-sm text-muted-foreground">{t('common.loading')}</p>}
+      {isLoading && <LoadingState />}
       <Table>
         <TableHeader>
           <TableRow>

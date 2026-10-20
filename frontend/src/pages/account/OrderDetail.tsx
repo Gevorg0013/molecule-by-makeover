@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { OrderStatusBadge, PaymentStatusBadge } from '@/components/common/StatusBadge'
 import { Separator } from '@/components/ui/separator'
 import { useOrder } from '@/hooks/useOrders'
@@ -12,7 +13,7 @@ export function AccountOrderDetailPage() {
   const { orderNumber } = useParams()
   const { data: order, isLoading } = useOrder(orderNumber)
 
-  if (isLoading) return <div className="px-4 py-20 text-center text-muted-foreground">{t('common.loading')}</div>
+  if (isLoading) return <LoadingState variant="page" />
   if (!order) return null
 
   return (

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 
+import { LoadingState } from '@/components/common/Spinner'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
 import { useAdminCustomer } from '@/hooks/admin/useAdminCustomers'
 import { formatDate } from '@/lib/date'
@@ -10,7 +11,7 @@ export function AdminCustomerDetailPage() {
   const { id } = useParams()
   const { data: customer, isLoading } = useAdminCustomer(id)
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">{t('common.loading')}</p>
+  if (isLoading) return <LoadingState />
   if (!customer) return null
 
   return (

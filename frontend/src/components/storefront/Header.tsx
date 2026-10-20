@@ -23,7 +23,6 @@ import { useUiStore } from '@/store/uiStore'
 const navLinks = [
   { to: '/', key: 'nav.home' },
   { to: '/products', key: 'nav.shop' },
-  { to: '/blog', key: 'nav.blog' },
 ]
 
 export function Header() {

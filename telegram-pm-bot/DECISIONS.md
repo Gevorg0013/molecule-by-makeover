@@ -42,7 +42,7 @@ Initially `/cancel` only prevented the *next* subtask from starting - a subtask 
 
 ## Model and SDK
 
-- Model defaults to `claude-opus-4-8` (current guidance: default to the latest Opus unless told otherwise). Configurable via `CLAUDE_MODEL`.
+- Model defaults to `claude-opus-5-5` (current guidance: default to the latest Opus unless told otherwise). Configurable via `CLAUDE_MODEL`.
 - Backend and Frontend agents default their `cwd` to `backend/`/`frontend/` when those directories exist in the working directory (matching this repo's layout), falling back to the repo root otherwise - see `src/utils/paths.ts`.
 - `settingSources: ['project']` so agents load this repo's own `CLAUDE.md` if present, rather than running in full SDK isolation.
 - The Planner's subtask breakdown uses the SDK's `outputFormat: {type: 'json_schema', ...}` rather than asking it to format plain text and regex-parsing the response - more robust, and the result lands typed in `SDKResultMessage.structured_output`.

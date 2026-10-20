@@ -53,7 +53,7 @@ public class ProductService(
 
     public async Task<ProductDetailDto> GetBySlugAsync(string slug, CancellationToken ct = default)
     {
-        var product = await unitOfWork.Products.GetBySlugAsync(slug, currentLanguage.LanguageId, ct)
+        var product = await unitOfWork.Products.GetBySlugAsync(slug, ct)
             ?? throw new NotFoundException(nameof(Product), slug);
 
         // Hidden (inactive) and soft-deleted products must not be reachable from the storefront.

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { authApi } from '@/api/auth'
 import { refreshSession } from '@/api/client'
@@ -60,11 +61,14 @@ export function useResetPassword() {
 export function useLogout() {
   const clearSession = useAuthStore((s) => s.clearSession)
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   return useMutation({
     mutationFn: () => authApi.logout(),
+    // onSettled, so a failed server-side logout still signs the user out locally.
     onSettled: () => {
       clearSession()
       queryClient.clear()
+      navigate('/login', { replace: true })
     },
   })
 }
