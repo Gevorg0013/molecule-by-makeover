@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useCart } from '@/hooks/useCart'
 import { useLogout } from '@/hooks/useAuth'
+import { useWishlist } from '@/hooks/useWishlist'
 import { isAdmin, useAuthStore } from '@/store/authStore'
 import { useUiStore } from '@/store/uiStore'
 
@@ -34,7 +35,10 @@ export function Header() {
   const { data: cart } = useCart()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const { data: wishlist } = useWishlist()
   const itemCount = cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0
+  // Gated on the user because a cached wishlist outlives logout (the query is only disabled).
+  const wishlistCount = user ? (wishlist?.items.length ?? 0) : 0
 
   function submitSearch(e: FormEvent) {
     e.preventDefault()
@@ -92,9 +96,14 @@ export function Header() {
         <div className="ml-auto flex items-center gap-1 md:ml-0 md:gap-2">
           <LanguageSwitcher />
 
-          <Button variant="ghost" size="icon" asChild className="hidden sm:inline-flex">
+          <Button variant="ghost" size="icon" asChild className="relative hidden sm:inline-flex">
             <Link to="/wishlist" aria-label={t('nav.wishlist')}>
               <Heart className="size-5" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-medium text-white">
+                  {wishlistCount > 99 ? '99+' : wishlistCount}
+                </span>
+              )}
             </Link>
           </Button>
 
@@ -184,6 +193,11 @@ export function Header() {
                 className="flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium hover:bg-accent/10"
               >
                 <Heart className="size-4" /> {t('nav.wishlist')}
+                {wishlistCount > 0 && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-medium text-white">
+                    {wishlistCount}
+                  </span>
+                )}
               </Link>
             </nav>
 
