@@ -194,9 +194,9 @@ public class CartService(
         var discount = 0m;
         if (cart.Coupon is not null && cart.Coupon.IsValidNow())
         {
-            discount = cart.Coupon.DiscountType == Domain.Enums.DiscountType.Percent
+            discount = Math.Min(subTotal, cart.Coupon.DiscountType == Domain.Enums.DiscountType.Percent
                 ? Math.Round(subTotal * cart.Coupon.DiscountValue / 100m, 2)
-                : Math.Min(subTotal, cart.Coupon.DiscountValue);
+                : cart.Coupon.DiscountValue);
         }
 
         var items = cart.Items.Select(i =>

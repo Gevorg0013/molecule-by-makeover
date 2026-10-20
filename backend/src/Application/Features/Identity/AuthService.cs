@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Application.Common.Options;
@@ -20,7 +21,8 @@ public class AuthService(
     IValidator<ResetPasswordRequest> resetPasswordValidator,
     IEmailSender emailSender,
     IConfiguration configuration,
-    IOptions<JwtOptions> jwtOptions) : IAuthService
+    IOptions<JwtOptions> jwtOptions,
+    Microsoft.Extensions.Logging.ILogger<AuthService> logger) : IAuthService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
@@ -28,7 +30,7 @@ public class AuthService(
     {
         await registerValidator.ValidateAndThrowAsync(request, ct);
 
-        var existing = await unitOfWork.Users.GetByEmailAsync(request.Email, ct);
+        var existing = await unitOfWork.Users.GetByEmailAsync(request.Email.Trim().ToLowerInvariant(), ct);
         if (existing is not null)
             throw new ConflictException("An account with this email already exists.");
 
@@ -157,19 +159,18 @@ public class AuthService(
 
         try
         {
-
             await emailSender.SendAsync(
                 user.Email,
                 "Reset your Molecule by Makeover password",
                 $"<p>We received a request to reset your password.</p><p><a href=\"{resetLink}\">Click here to reset your password</a></p><p>This link will expire in 1 hour. If you did not request this, you can safely ignore this email.</p>",
                 ct);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            Console.WriteLine(ex.ToString());
-            throw;
+            // Do not surface delivery failures: a 500 only for existing accounts would let callers
+            // enumerate registered emails. The failure is logged for operators instead.
+            logger.LogError(ex, "Failed to send password reset email");
         }
-
     }
 
     public async Task ResetPasswordAsync(ResetPasswordRequest request, CancellationToken ct = default)

@@ -10,6 +10,8 @@ public class CustomerService(IUnitOfWork unitOfWork) : ICustomerService
 {
     public async Task<PaginatedList<CustomerSummaryDto>> GetAllAsync(int page, int pageSize, CancellationToken ct = default)
     {
+        page = Math.Max(page, 1);
+        pageSize = pageSize <= 0 ? 20 : Math.Min(pageSize, 100);
         var query = unitOfWork.Users.Query().OrderByDescending(u => u.CreatedAt);
         var total = await query.CountAsync(ct);
         var users = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);

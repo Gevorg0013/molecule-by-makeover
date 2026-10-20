@@ -88,14 +88,14 @@ export function ProductListPage() {
               <div className="flex items-center gap-2">
                 <Input
                   type="number"
-                  placeholder="Min"
+                  placeholder={t('common.min')}
                   defaultValue={minPrice}
                   onBlur={(e) => updateParam('minPrice', e.target.value || null)}
                   className="w-full"
                 />
                 <Input
                   type="number"
-                  placeholder="Max"
+                  placeholder={t('common.max')}
                   defaultValue={maxPrice}
                   onBlur={(e) => updateParam('maxPrice', e.target.value || null)}
                   className="w-full"

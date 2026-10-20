@@ -32,6 +32,12 @@ public class StripePaymentProvider(IOptions<StripeOptions> options) : IPaymentPr
 
     public Task<PaymentWebhookResult> HandleWebhookAsync(string rawBody, IDictionary<string, string> headers, CancellationToken ct = default)
     {
+        // An unset or placeholder secret (e.g. "whsec_replace_me" from the sample config) is publicly
+        // known, so signatures computed with it would be forgeable: treat every webhook as invalid.
+        if (string.IsNullOrWhiteSpace(_options.WebhookSecret)
+            || _options.WebhookSecret.Contains("replace_me", StringComparison.OrdinalIgnoreCase))
+            return Task.FromResult(new PaymentWebhookResult(false, string.Empty, string.Empty, PaymentEventType.Unknown));
+
         if (!headers.TryGetValue("Stripe-Signature", out var signature))
             return Task.FromResult(new PaymentWebhookResult(false, string.Empty, string.Empty, PaymentEventType.Unknown));
 

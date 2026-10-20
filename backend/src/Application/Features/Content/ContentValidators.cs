@@ -12,7 +12,8 @@ public class BlogPostUpsertRequestValidator : AbstractValidator<BlogPostUpsertRe
         {
             t.RuleFor(x => x.LanguageCode).NotEmpty().Must(c => LanguageCodes.All.Contains(c));
             t.RuleFor(x => x.Title).NotEmpty().MaximumLength(300);
-            t.RuleFor(x => x.Slug).NotEmpty().MaximumLength(300).Matches("^[a-z0-9-]+$");
+            t.RuleFor(x => x.Slug).NotEmpty().MaximumLength(300).Matches(@"^[\p{L}\p{N}-]+$")
+                .WithMessage("Slug can contain only letters, numbers, and hyphens.");
             t.RuleFor(x => x.Content).NotEmpty();
         });
     }

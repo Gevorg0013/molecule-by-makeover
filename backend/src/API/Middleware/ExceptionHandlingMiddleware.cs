@@ -1,5 +1,6 @@
 using System.Net;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using MoleculeByMakeover.Shared.Exceptions;
 
@@ -21,6 +22,16 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
 
     private async Task HandleAsync(HttpContext context, Exception exception)
     {
+        // Unique/foreign-key violations (duplicate SKU, slug, email, double review, deleting a
+        // category that still has products, ...) are client errors, not server faults.
+        if (exception is DbUpdateException && exception.GetBaseException() is Npgsql.PostgresException { SqlState: "23505" or "23503" } pg)
+        {
+            logger.LogWarning(exception, "Database constraint violation ({SqlState}) processing {Method} {Path}", pg.SqlState, context.Request.Method, context.Request.Path);
+            exception = new ConflictException(pg.SqlState == "23505"
+                ? "A record with the same unique value (for example SKU, slug or email) already exists."
+                : "The operation conflicts with related data (a referenced record is missing or still in use).");
+        }
+
         var (statusCode, title) = exception switch
         {
             ValidationException => (HttpStatusCode.BadRequest, "One or more validation errors occurred."),

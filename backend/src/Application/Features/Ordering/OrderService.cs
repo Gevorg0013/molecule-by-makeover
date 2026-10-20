@@ -11,6 +11,8 @@ public class OrderService(IUnitOfWork unitOfWork) : IOrderService
 {
     public async Task<PaginatedList<OrderSummaryDto>> GetMyOrdersAsync(Guid userId, int page, int pageSize, CancellationToken ct = default)
     {
+        page = Math.Max(page, 1);
+        pageSize = pageSize <= 0 ? 20 : Math.Min(pageSize, 100);
         var query = unitOfWork.Orders.Query().Where(o => o.UserId == userId).OrderByDescending(o => o.PlacedAt);
         var total = await query.CountAsync(ct);
         var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
@@ -43,6 +45,9 @@ public class OrderService(IUnitOfWork unitOfWork) : IOrderService
 
     public async Task UpdateStatusAsync(Guid orderId, UpdateOrderStatusRequest request, CancellationToken ct = default)
     {
+        if (!Enum.IsDefined(request.Status))
+            throw new BadRequestException("Unknown order status.");
+
         var order = await unitOfWork.Orders.GetByIdAsync(orderId, ct) ?? throw new NotFoundException(nameof(Order), orderId);
 
         order.Status = request.Status;

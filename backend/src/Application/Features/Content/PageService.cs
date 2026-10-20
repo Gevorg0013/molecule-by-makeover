@@ -15,6 +15,9 @@ public class PageService(
     public async Task<PageDto> GetByKeyAsync(string key, CancellationToken ct = default)
     {
         var page = await unitOfWork.Pages.GetByKeyAsync(key, ct) ?? throw new NotFoundException(nameof(Page), key);
+        if (!page.IsPublished)
+            throw new NotFoundException(nameof(Page), key);
+
         var translation = ResolveTranslation(page.Translations)
             ?? throw new NotFoundException(nameof(PageTranslation), key);
 

@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Domain.Entities;
 using MoleculeByMakeover.Domain.Interfaces;
@@ -11,7 +12,8 @@ namespace MoleculeByMakeover.Application.Features.Ordering;
 public class CheckoutService(
     IUnitOfWork unitOfWork,
     IPaymentProviderResolver paymentProviderResolver,
-    IValidator<CheckoutRequest> validator) : ICheckoutService
+    IValidator<CheckoutRequest> validator,
+    ILogger<CheckoutService> logger) : ICheckoutService
 {
     public async Task<CheckoutResultDto> PlaceOrderAsync(
         Guid userId, string? guestToken, CheckoutRequest request, string returnUrl, string cancelUrl, CancellationToken ct = default)
@@ -25,6 +27,9 @@ public class CheckoutService(
         // Re-validate stock and re-check the coupon server-side; never trust client-computed totals.
         foreach (var item in cart.Items)
         {
+            if (!item.Product.IsActive || item.Product.IsDeleted)
+                throw new BadRequestException($"'{item.Product.Sku}' is no longer available. Please remove it from your cart.");
+
             if (item.Quantity > item.Product.Stock)
                 throw new BadRequestException($"'{item.Product.Sku}' only has {item.Product.Stock} unit(s) left in stock.");
         }
@@ -36,9 +41,13 @@ public class CheckoutService(
             if (!cart.Coupon.IsValidNow())
                 throw new BadRequestException("The applied coupon is no longer valid.");
 
-            discountTotal = cart.Coupon.DiscountType == Domain.Enums.DiscountType.Percent
+            if (cart.Coupon.MinOrderAmount is not null && subTotal < cart.Coupon.MinOrderAmount)
+                throw new BadRequestException($"The applied coupon requires a minimum order of {cart.Coupon.MinOrderAmount}.");
+
+            // A discount can never exceed the order subtotal (guards against e.g. a 150% coupon).
+            discountTotal = Math.Min(subTotal, cart.Coupon.DiscountType == Domain.Enums.DiscountType.Percent
                 ? Math.Round(subTotal * cart.Coupon.DiscountValue / 100m, 2)
-                : Math.Min(subTotal, cart.Coupon.DiscountValue);
+                : cart.Coupon.DiscountValue);
 
             cart.Coupon.UsesCount++;
             unitOfWork.Coupons.Update(cart.Coupon);
@@ -60,6 +69,7 @@ public class CheckoutService(
         }
         catch (Exception ex) when (ex is not BadRequestException)
         {
+            logger.LogError(ex, "Payment session creation failed for order {OrderNumber} via provider {Provider}", orderNumber, request.PaymentProviderKey);
             throw new BadRequestException("We couldn't start the payment process. Please try again in a moment.");
         }
 

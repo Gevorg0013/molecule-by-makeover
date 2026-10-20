@@ -103,6 +103,13 @@ public class CategoryService(
         var category = await unitOfWork.Categories.GetByIdAsync(id, ct)
             ?? throw new NotFoundException(nameof(Category), id);
 
+        // Soft-deleting a category hides every product in it from the storefront and admin lists
+        // (query filters), so refuse while it is still in use.
+        if (await unitOfWork.Products.Query().AnyAsync(p => p.CategoryId == id, ct))
+            throw new ConflictException("This category still contains products. Move or delete them first.");
+        if (await unitOfWork.Categories.Query().AnyAsync(c => c.ParentCategoryId == id, ct))
+            throw new ConflictException("This category has sub-categories. Move or delete them first.");
+
         category.IsDeleted = true;
         category.DeletedAt = DateTimeOffset.UtcNow;
         unitOfWork.Categories.Update(category);

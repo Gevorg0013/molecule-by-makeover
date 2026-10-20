@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 
 import { authApi } from '@/api/auth'
 import { refreshSession } from '@/api/client'
+import i18n from '@/i18n'
 import { useAuthStore } from '@/store/authStore'
 import type { ApiError, ForgotPasswordRequest, LoginRequest, RegisterRequest, ResetPasswordRequest } from '@/types/dto'
 
@@ -70,5 +71,5 @@ export function useLogout() {
 
 export function authErrorMessage(error: unknown): string {
   const apiError = error as ApiError
-  return apiError?.detail ?? apiError?.title ?? 'Something went wrong'
+  return apiError?.detail ?? apiError?.title ?? i18n.t('common.somethingWentWrong')
 }

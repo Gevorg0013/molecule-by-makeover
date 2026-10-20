@@ -57,7 +57,7 @@ export function Header() {
           size="icon"
           className="md:hidden"
           onClick={() => setMobileOpen(true)}
-          aria-label="Menu"
+          aria-label={t('common.menu')}
         >
           <Menu className="size-5" />
         </Button>

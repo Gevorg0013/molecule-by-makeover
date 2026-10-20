@@ -15,6 +15,8 @@ public class BlogService(
 {
     public async Task<PaginatedList<BlogPostListItemDto>> GetPublishedAsync(int page, int pageSize, CancellationToken ct = default)
     {
+        page = Math.Max(page, 1);
+        pageSize = pageSize <= 0 ? 20 : Math.Min(pageSize, 100);
         var query = unitOfWork.BlogPosts.Query()
             .Include(b => b.Translations)
             .Where(b => b.IsPublished && !b.IsDeleted)
@@ -30,6 +32,10 @@ public class BlogService(
     {
         var post = await unitOfWork.BlogPosts.GetBySlugAsync(slug, currentLanguage.LanguageId, ct)
             ?? throw new NotFoundException(nameof(BlogPost), slug);
+
+        // Drafts and soft-deleted posts must not be reachable from the public site.
+        if (!post.IsPublished || post.IsDeleted)
+            throw new NotFoundException(nameof(BlogPost), slug);
 
         var translation = ResolveTranslation(post.Translations);
         return new BlogPostDetailDto(post.Id, translation?.Title ?? string.Empty, translation?.Slug ?? string.Empty,

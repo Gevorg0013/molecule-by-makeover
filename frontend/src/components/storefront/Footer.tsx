@@ -23,7 +23,7 @@ export function Footer() {
 
         <div className="flex flex-col gap-2 text-sm">
           <p className="mb-1 font-medium">{t('footer.about')}</p>
-          <Link to="/pages/about-us" className="text-muted-foreground hover:text-foreground">
+          <Link to="/pages/about" className="text-muted-foreground hover:text-foreground">
             {t('footer.about')}
           </Link>
           <Link to="/pages/privacy-policy" className="text-muted-foreground hover:text-foreground">

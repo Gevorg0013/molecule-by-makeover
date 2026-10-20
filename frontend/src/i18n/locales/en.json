@@ -17,6 +17,9 @@
     "admin": "Admin"
   },
   "common": {
+    "min": "Min",
+    "max": "Max",
+    "menu": "Menu",
     "search": "Search products…",
     "loading": "Loading…",
     "save": "Save",
@@ -96,6 +99,7 @@
     "addedToCart": "Added to cart"
   },
   "cart": {
+    "shipping": "Shipping",
     "title": "Your Cart",
     "empty": "Your cart is empty.",
     "startShopping": "Start Shopping",

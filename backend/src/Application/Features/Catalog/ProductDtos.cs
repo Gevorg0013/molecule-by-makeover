@@ -118,8 +118,11 @@ public enum ProductSort
 
 public class ProductQueryParameters
 {
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 20;
+    private int _page = 1;
+    private int _pageSize = 20;
+
+    public int Page { get => _page; set => _page = Math.Max(value, 1); }
+    public int PageSize { get => _pageSize; set => _pageSize = value <= 0 ? 20 : Math.Min(value, 100); }
     public string? CategorySlug { get; set; }
     public decimal? MinPrice { get; set; }
     public decimal? MaxPrice { get; set; }

@@ -57,6 +57,18 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
+
+// The committed appsettings.json ships a placeholder signing key. Anyone who has read the repo
+// could forge an Admin token with it, so refuse to start outside Development unless a real key is set.
+var signingKey = jwtSection["SigningKey"];
+if (!builder.Environment.IsDevelopment()
+    && (string.IsNullOrWhiteSpace(signingKey) || signingKey.Length < 32
+        || signingKey.Contains("change_me", StringComparison.OrdinalIgnoreCase)))
+{
+    throw new InvalidOperationException(
+        "Jwt:SigningKey is missing, shorter than 32 characters, or still the placeholder value. " +
+        "Set a long random secret (e.g. via the Jwt__SigningKey environment variable) before running outside Development.");
+}
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -88,12 +100,17 @@ builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    options.AddFixedWindowLimiter("auth", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 10;
-        limiterOptions.Window = TimeSpan.FromMinutes(1);
-        limiterOptions.QueueLimit = 0;
-    });
+    // Partitioned per client IP. A plain AddFixedWindowLimiter policy is ONE shared bucket for every
+    // caller, so 10 requests/minute from anyone would lock every user out of login/refresh.
+    options.AddPolicy("auth", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         RateLimitPartition.GetFixedWindowLimiter(

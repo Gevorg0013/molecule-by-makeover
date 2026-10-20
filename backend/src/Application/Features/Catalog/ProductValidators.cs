@@ -15,6 +15,15 @@ public class ProductUpsertRequestValidator : AbstractValidator<ProductUpsertRequ
             .NotNull().When(x => x.DiscountType != Domain.Enums.DiscountType.None)
             .WithMessage("Discount value is required when a discount type is set.");
 
+        RuleFor(x => x.DiscountValue).GreaterThan(0)
+            .When(x => x.DiscountType != Domain.Enums.DiscountType.None && x.DiscountValue is not null);
+        RuleFor(x => x.DiscountValue).LessThanOrEqualTo(100)
+            .When(x => x.DiscountType == Domain.Enums.DiscountType.Percent && x.DiscountValue is not null)
+            .WithMessage("A percentage discount cannot exceed 100.");
+        RuleFor(x => x.DiscountValue).LessThan(x => x.Price)
+            .When(x => x.DiscountType == Domain.Enums.DiscountType.Fixed && x.DiscountValue is not null)
+            .WithMessage("A fixed discount must be less than the price.");
+
         RuleFor(x => x.Translations).NotEmpty();
         RuleForEach(x => x.Translations).ChildRules(t =>
         {

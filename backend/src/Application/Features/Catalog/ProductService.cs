@@ -56,6 +56,10 @@ public class ProductService(
         var product = await unitOfWork.Products.GetBySlugAsync(slug, currentLanguage.LanguageId, ct)
             ?? throw new NotFoundException(nameof(Product), slug);
 
+        // Hidden (inactive) and soft-deleted products must not be reachable from the storefront.
+        if (!product.IsActive || product.IsDeleted)
+            throw new NotFoundException(nameof(Product), slug);
+
         return ToDetailDto(product);
     }
 
@@ -63,6 +67,9 @@ public class ProductService(
     {
         var product = await unitOfWork.Products.GetByIdAsync(productId, ct)
             ?? throw new NotFoundException(nameof(Product), productId);
+
+        if (!product.IsActive || product.IsDeleted)
+            throw new NotFoundException(nameof(Product), productId);
 
         var related = await unitOfWork.Products.QueryWithTranslations()
             .Where(p => p.Id != productId && p.CategoryId == product.CategoryId && p.IsActive && !p.IsDeleted)

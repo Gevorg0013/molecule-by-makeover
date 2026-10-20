@@ -55,7 +55,7 @@ export function AccountOrderDetailPage() {
         )}
         {order.shippingTotal > 0 && (
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Shipping</span>
+            <span className="text-muted-foreground">{t('cart.shipping')}</span>
             <span>{formatCurrency(order.shippingTotal, order.currency)}</span>
           </div>
         )}
