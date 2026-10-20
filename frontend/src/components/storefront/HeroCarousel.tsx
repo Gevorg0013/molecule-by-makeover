@@ -80,7 +80,7 @@ export function HeroCarousel({ banners }: { banners: BannerDto[] }) {
         <h1 className="font-serif text-4xl sm:text-5xl">{banner?.title ?? t('brand.name')}</h1>
         <p className="mt-3 text-lg text-white/90">{banner?.subtitle ?? t('brand.tagline')}</p>
         <Button size="lg" variant="accent" className="mt-6" asChild>
-          <Link to={banner?.linkUrl ?? '/products'}>{banner?.ctaText || t('nav.shop')}</Link>
+          <Link to={'/products'}>{banner?.ctaText || t('nav.shop')}</Link>
         </Button>
       </div>
 

@@ -36,7 +36,6 @@ export function AdminBannerEditPage() {
   const uploadImage = useUploadBannerImage()
 
   const [imageUrl, setImageUrl] = useState('')
-  const [linkUrl, setLinkUrl] = useState('')
   const [sortOrder, setSortOrder] = useState('0')
   const [isActive, setIsActive] = useState(true)
   const [startsAt, setStartsAt] = useState('')
@@ -46,7 +45,6 @@ export function AdminBannerEditPage() {
   useEffect(() => {
     if (!banner) return
     setImageUrl(banner.imageUrl)
-    setLinkUrl(banner.linkUrl ?? '')
     setSortOrder(String(banner.sortOrder))
     setIsActive(banner.isActive)
     setStartsAt(banner.startsAt ? banner.startsAt.slice(0, 10) : '')
@@ -77,7 +75,6 @@ export function AdminBannerEditPage() {
     }
     const body: BannerUpsertRequest = {
       imageUrl,
-      linkUrl: linkUrl || null,
       sortOrder: Number(sortOrder),
       isActive,
       startsAt: startsAt ? new Date(startsAt).toISOString() : null,
@@ -115,10 +112,6 @@ export function AdminBannerEditPage() {
           <div>
             <Label className="mb-1.5">Sort Order</Label>
             <Input type="number" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} />
-          </div>
-          <div className="sm:col-span-2">
-            <Label className="mb-1.5">Link URL</Label>
-            <Input value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} />
           </div>
           <label className="flex items-center gap-2 text-sm">
             <Checkbox checked={isActive} onCheckedChange={(v) => setIsActive(!!v)} />

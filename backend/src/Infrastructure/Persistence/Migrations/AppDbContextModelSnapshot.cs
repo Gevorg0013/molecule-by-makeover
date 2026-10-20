@@ -41,9 +41,6 @@ namespace MoleculeByMakeover.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("LinkUrl")
-                        .HasColumnType("text");
-
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 

@@ -32,7 +32,6 @@ public class BannerService(
         var banner = new Banner
         {
             ImageUrl = request.ImageUrl,
-            LinkUrl = request.LinkUrl,
             SortOrder = request.SortOrder,
             IsActive = request.IsActive,
             StartsAt = request.StartsAt,
@@ -54,7 +53,6 @@ public class BannerService(
             .FirstOrDefaultAsync(b => b.Id == id, ct) ?? throw new NotFoundException(nameof(Banner), id);
 
         banner.ImageUrl = request.ImageUrl;
-        banner.LinkUrl = request.LinkUrl;
         banner.SortOrder = request.SortOrder;
         banner.IsActive = request.IsActive;
         banner.StartsAt = request.StartsAt;
@@ -98,11 +96,11 @@ public class BannerService(
     private BannerDto ToDto(Banner banner)
     {
         var translation = ResolveTranslation(banner.Translations);
-        return new BannerDto(banner.Id, banner.ImageUrl, banner.LinkUrl, translation?.Title, translation?.Subtitle, translation?.CtaText);
+        return new BannerDto(banner.Id, banner.ImageUrl,  translation?.Title, translation?.Subtitle, translation?.CtaText);
     }
 
     private static BannerAdminDto ToAdminDto(Banner banner) => new(
-        banner.Id, banner.ImageUrl, banner.LinkUrl, banner.SortOrder, banner.IsActive, banner.StartsAt, banner.EndsAt,
+        banner.Id, banner.ImageUrl, banner.SortOrder, banner.IsActive, banner.StartsAt, banner.EndsAt,
         banner.Translations.Select(t => new BannerTranslationDto(t.Id, t.Language.Code, t.Title, t.Subtitle, t.CtaText)).ToList());
 
     private BannerTranslation? ResolveTranslation(IEnumerable<BannerTranslation> translations) =>

@@ -5,7 +5,6 @@ namespace MoleculeByMakeover.Domain.Entities;
 public class Banner : BaseEntity
 {
     public string ImageUrl { get; set; } = default!;
-    public string? LinkUrl { get; set; }
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTimeOffset? StartsAt { get; set; }

@@ -203,7 +203,6 @@ export interface PageDto {
 export interface BannerDto {
   id: string
   imageUrl: string
-  linkUrl: string | null
   title: string | null
   subtitle: string | null
   ctaText: string | null
@@ -480,7 +479,6 @@ export interface BannerTranslationInput {
 export interface BannerAdminDto {
   id: string
   imageUrl: string
-  linkUrl: string | null
   sortOrder: number
   isActive: boolean
   startsAt: string | null
@@ -490,7 +488,6 @@ export interface BannerAdminDto {
 
 export interface BannerUpsertRequest {
   imageUrl: string
-  linkUrl?: string | null
   sortOrder: number
   isActive: boolean
   startsAt?: string | null
