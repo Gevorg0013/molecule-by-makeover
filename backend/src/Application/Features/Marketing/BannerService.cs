@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Domain.Entities;
 using MoleculeByMakeover.Domain.Interfaces;
@@ -10,7 +11,8 @@ namespace MoleculeByMakeover.Application.Features.Marketing;
 public class BannerService(
     IUnitOfWork unitOfWork,
     ICurrentLanguageService currentLanguage,
-    IValidator<BannerUpsertRequest> validator) : IBannerService
+    IValidator<BannerUpsertRequest> validator,
+    ILogger<BannerService> logger) : IBannerService
 {
     public async Task<List<BannerDto>> GetActiveAsync(CancellationToken ct = default)
     {
@@ -42,6 +44,7 @@ public class BannerService(
         await ApplyTranslationsAsync(banner, request.Translations, ct);
         await unitOfWork.Banners.AddAsync(banner, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Banner {BannerId} created, active {IsActive}", banner.Id, banner.IsActive);
         return banner.Id;
     }
 
@@ -64,6 +67,7 @@ public class BannerService(
 
         unitOfWork.Banners.Update(banner);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Banner {BannerId} updated, active {IsActive}", banner.Id, banner.IsActive);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
@@ -71,6 +75,7 @@ public class BannerService(
         var banner = await unitOfWork.Banners.GetByIdAsync(id, ct) ?? throw new NotFoundException(nameof(Banner), id);
         unitOfWork.Banners.Remove(banner);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Banner {BannerId} deleted", banner.Id);
     }
 
     private async Task ApplyTranslationsAsync(Banner banner, List<BannerTranslationInput> translations, CancellationToken ct)

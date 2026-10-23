@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using Stripe;
@@ -7,7 +8,7 @@ namespace MoleculeByMakeover.Infrastructure.Payments;
 // First IPaymentProvider adapter. Idram/ArCa/Telcell become sibling classes later -
 // the Checkout/Webhook code in Application never references this type directly,
 // only IPaymentProvider, resolved by IPaymentProviderResolver via ProviderKey.
-public class StripePaymentProvider(IOptions<StripeOptions> options) : IPaymentProvider
+public class StripePaymentProvider(IOptions<StripeOptions> options, ILogger<StripePaymentProvider> logger) : IPaymentProvider
 {
     private readonly StripeOptions _options = options.Value;
     private RequestOptions RequestOptions => new() { ApiKey = _options.SecretKey };
@@ -36,10 +37,16 @@ public class StripePaymentProvider(IOptions<StripeOptions> options) : IPaymentPr
         // known, so signatures computed with it would be forgeable: treat every webhook as invalid.
         if (string.IsNullOrWhiteSpace(_options.WebhookSecret)
             || _options.WebhookSecret.Contains("replace_me", StringComparison.OrdinalIgnoreCase))
+        {
+            logger.LogError("Stripe webhook rejected: webhook secret is not configured");
             return Task.FromResult(new PaymentWebhookResult(false, string.Empty, string.Empty, PaymentEventType.Unknown));
+        }
 
         if (!headers.TryGetValue("Stripe-Signature", out var signature))
+        {
+            logger.LogWarning("Stripe webhook rejected: missing Stripe-Signature header");
             return Task.FromResult(new PaymentWebhookResult(false, string.Empty, string.Empty, PaymentEventType.Unknown));
+        }
 
         try
         {
@@ -57,8 +64,9 @@ public class StripePaymentProvider(IOptions<StripeOptions> options) : IPaymentPr
 
             return Task.FromResult(new PaymentWebhookResult(true, providerReference, stripeEvent.Id, eventType));
         }
-        catch (StripeException)
+        catch (StripeException ex)
         {
+            logger.LogWarning("Stripe webhook rejected: signature verification failed ({Error})", ex.Message);
             return Task.FromResult(new PaymentWebhookResult(false, string.Empty, string.Empty, PaymentEventType.Unknown));
         }
     }
@@ -74,10 +82,13 @@ public class StripePaymentProvider(IOptions<StripeOptions> options) : IPaymentPr
                 Amount = ToMinorUnits(amount)
             }, RequestOptions, ct);
 
+            logger.LogInformation("Stripe refund {RefundId} created for {PaymentReference}: {Amount} {Currency}",
+                refund.Id, providerReference, amount, currency);
             return new RefundResult(true, refund.Id, null);
         }
         catch (StripeException ex)
         {
+            logger.LogError(ex, "Stripe refund failed for {PaymentReference}: {Amount} {Currency}", providerReference, amount, currency);
             return new RefundResult(false, null, ex.Message);
         }
     }

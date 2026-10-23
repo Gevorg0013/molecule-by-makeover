@@ -1,12 +1,13 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Domain.Entities;
 using MoleculeByMakeover.Domain.Interfaces;
 using MoleculeByMakeover.Shared.Exceptions;
 
 namespace MoleculeByMakeover.Application.Features.Admin;
 
-public class SettingsService(IUnitOfWork unitOfWork, IMapper mapper) : ISettingsService
+public class SettingsService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<SettingsService> logger) : ISettingsService
 {
     public async Task<List<SettingDto>> GetByGroupAsync(string group, CancellationToken ct = default)
     {
@@ -18,10 +19,12 @@ public class SettingsService(IUnitOfWork unitOfWork, IMapper mapper) : ISettings
     {
         await unitOfWork.Settings.UpsertAsync(key, request.Value, group, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        // The value is not logged: settings can hold credentials or other sensitive config.
+        logger.LogInformation("Setting {Group}/{Key} updated", group, key);
     }
 }
 
-public class LanguageService(IUnitOfWork unitOfWork, IMapper mapper) : ILanguageService
+public class LanguageService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<LanguageService> logger) : ILanguageService
 {
     public async Task<List<LanguageDto>> GetAllAsync(CancellationToken ct = default)
     {
@@ -37,6 +40,7 @@ public class LanguageService(IUnitOfWork unitOfWork, IMapper mapper) : ILanguage
         var language = new Language { Code = request.Code, Name = request.Name, IsDefault = request.IsDefault, IsActive = request.IsActive };
         await unitOfWork.Languages.AddAsync(language, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Language {LanguageCode} ({LanguageId}) created", language.Code, language.Id);
         return language.Id;
     }
 
@@ -52,5 +56,7 @@ public class LanguageService(IUnitOfWork unitOfWork, IMapper mapper) : ILanguage
 
         unitOfWork.Languages.Update(language);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Language {LanguageCode} ({LanguageId}) updated, active {IsActive}, default {IsDefault}",
+            language.Code, language.Id, language.IsActive, language.IsDefault);
     }
 }

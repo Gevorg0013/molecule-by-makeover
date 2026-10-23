@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Domain.Entities;
 using MoleculeByMakeover.Domain.Interfaces;
@@ -11,7 +12,8 @@ namespace MoleculeByMakeover.Application.Features.Content;
 public class BlogService(
     IUnitOfWork unitOfWork,
     ICurrentLanguageService currentLanguage,
-    IValidator<BlogPostUpsertRequest> validator) : IBlogService
+    IValidator<BlogPostUpsertRequest> validator,
+    ILogger<BlogService> logger) : IBlogService
 {
     public async Task<PaginatedList<BlogPostListItemDto>> GetPublishedAsync(int page, int pageSize, CancellationToken ct = default)
     {
@@ -73,6 +75,7 @@ public class BlogService(
 
         await unitOfWork.BlogPosts.AddAsync(post, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Blog post {PostId} created by {AuthorId}, published {IsPublished}", post.Id, authorId, post.IsPublished);
         return post.Id;
     }
 
@@ -93,6 +96,7 @@ public class BlogService(
 
         unitOfWork.BlogPosts.Update(post);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Blog post {PostId} updated, published {IsPublished}", post.Id, post.IsPublished);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
@@ -102,6 +106,7 @@ public class BlogService(
         post.DeletedAt = DateTimeOffset.UtcNow;
         unitOfWork.BlogPosts.Update(post);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Blog post {PostId} deleted", post.Id);
     }
 
     private async Task ApplyTranslationsAsync(BlogPost post, List<BlogTranslationInput> translations, CancellationToken ct)

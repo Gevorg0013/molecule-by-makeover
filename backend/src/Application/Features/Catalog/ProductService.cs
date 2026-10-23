@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Domain.Entities;
 using MoleculeByMakeover.Domain.Interfaces;
@@ -11,7 +12,8 @@ namespace MoleculeByMakeover.Application.Features.Catalog;
 public class ProductService(
     IUnitOfWork unitOfWork,
     ICurrentLanguageService currentLanguage,
-    IValidator<ProductUpsertRequest> validator) : IProductService
+    IValidator<ProductUpsertRequest> validator,
+    ILogger<ProductService> logger) : IProductService
 {
     public async Task<PaginatedList<ProductListItemDto>> SearchAsync(ProductQueryParameters query, CancellationToken ct = default)
     {
@@ -119,6 +121,8 @@ public class ProductService(
 
         await unitOfWork.Products.AddAsync(product, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Product {Sku} ({ProductId}) created: price {Price}, stock {Stock}, active {IsActive}",
+            product.Sku, product.Id, product.Price, product.Stock, product.IsActive);
 
         return product.Id;
     }
@@ -129,6 +133,9 @@ public class ProductService(
 
         var product = await unitOfWork.Products.QueryWithTranslations().FirstOrDefaultAsync(p => p.Id == id, ct)
             ?? throw new NotFoundException(nameof(Product), id);
+
+        var previousPrice = product.Price;
+        var previousStock = product.Stock;
 
         product.Sku = request.Sku;
         product.CategoryId = request.CategoryId;
@@ -150,6 +157,9 @@ public class ProductService(
 
         unitOfWork.Products.Update(product);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation(
+            "Product {Sku} ({ProductId}) updated: price {PreviousPrice} -> {Price}, stock {PreviousStock} -> {Stock}, active {IsActive}",
+            product.Sku, product.Id, previousPrice, product.Price, previousStock, product.Stock, product.IsActive);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
@@ -161,6 +171,7 @@ public class ProductService(
         product.DeletedAt = DateTimeOffset.UtcNow;
         unitOfWork.Products.Update(product);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Product {Sku} ({ProductId}) deleted", product.Sku, product.Id);
     }
 
     public async Task<ProductImageDto> AddImageAsync(Guid productId, string url, string? altText, CancellationToken ct = default)
@@ -181,6 +192,7 @@ public class ProductService(
         product.Images.Add(image);
         unitOfWork.TrackNew(image);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Image {ImageId} added to product {ProductId}", image.Id, productId);
 
         return new ProductImageDto(image.Id, image.Url, image.AltText, image.SortOrder, image.IsPrimary);
     }
@@ -196,6 +208,7 @@ public class ProductService(
         product.Images.Remove(image);
         unitOfWork.Products.Update(product);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Image {ImageId} removed from product {ProductId}", imageId, productId);
     }
 
     private async Task ApplyTranslationsAsync(Product product, List<ProductTranslationInput> translations, CancellationToken ct)

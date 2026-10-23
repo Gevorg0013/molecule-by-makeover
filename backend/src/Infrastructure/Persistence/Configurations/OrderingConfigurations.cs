@@ -148,3 +148,47 @@ public class ReviewConfiguration : IEntityTypeConfiguration<Review>
             .HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+// Audit tables: no foreign keys to Orders/Users on purpose, so the trail is never cascaded away
+// or blocked by changes to the records it describes.
+public class SalesTransactionConfiguration : IEntityTypeConfiguration<SalesTransaction>
+{
+    public void Configure(EntityTypeBuilder<SalesTransaction> builder)
+    {
+        builder.ToTable("SalesTransactions");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.OrderNumber).HasMaxLength(50);
+        builder.Property(x => x.SubTotal).HasColumnType("numeric(18,2)");
+        builder.Property(x => x.DiscountTotal).HasColumnType("numeric(18,2)");
+        builder.Property(x => x.ShippingTotal).HasColumnType("numeric(18,2)");
+        builder.Property(x => x.GrandTotal).HasColumnType("numeric(18,2)");
+        builder.Property(x => x.Currency).HasMaxLength(3);
+        builder.Property(x => x.CouponCode).HasMaxLength(50);
+        builder.Property(x => x.PaymentProvider).HasMaxLength(50).IsRequired();
+        builder.Property(x => x.PaymentReference).HasMaxLength(200);
+        builder.Property(x => x.FailureReason).HasMaxLength(500);
+
+        builder.HasIndex(x => x.OrderId).IsUnique().HasFilter("\"OrderId\" IS NOT NULL");
+        builder.HasIndex(x => x.OrderNumber);
+        builder.HasIndex(x => x.PaymentReference);
+        builder.HasIndex(x => new { x.UserId, x.StartedAt });
+        builder.HasIndex(x => new { x.Status, x.StartedAt });
+
+        builder.HasMany(x => x.Events).WithOne(e => e.SalesTransaction)
+            .HasForeignKey(e => e.SalesTransactionId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+public class SalesTransactionEventConfiguration : IEntityTypeConfiguration<SalesTransactionEvent>
+{
+    public void Configure(EntityTypeBuilder<SalesTransactionEvent> builder)
+    {
+        builder.ToTable("SalesTransactionEvents");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Message).HasMaxLength(1000).IsRequired();
+        builder.Property(x => x.Data).HasColumnType("jsonb");
+
+        builder.HasIndex(x => new { x.SalesTransactionId, x.OccurredAt });
+        builder.HasIndex(x => new { x.EventType, x.OccurredAt });
+    }
+}

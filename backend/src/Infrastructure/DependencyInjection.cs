@@ -20,9 +20,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<AppDbContext>(options =>
+        services.AddSingleton<AuditUserInterceptor>();
+        services.AddDbContext<AppDbContext>((serviceProvider, options) =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
-                npgsql => npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
+                    npgsql => npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName))
+                .AddInterceptors(serviceProvider.GetRequiredService<AuditUserInterceptor>()));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -44,10 +46,13 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IAuthenticationLogWriter, AuthenticationLogWriter>();
+        services.AddScoped<ISalesTransactionWriter, SalesTransactionWriter>();
         services.AddScoped<ICurrentLanguageService, CurrentLanguageService>();
         services.AddSingleton<LanguageCache>();
 
         services.AddHostedService<StockReservationCleanupService>();
+        services.AddHostedService<LogRetentionService>();
 
         return services;
     }

@@ -1,3 +1,4 @@
+using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Shared.Common;
 
 namespace MoleculeByMakeover.Application.Features.Ordering;
@@ -14,5 +15,11 @@ public interface IOrderService
     Task<int> ReleaseExpiredReservationsAsync(CancellationToken ct = default);
 
     /// <summary>Applies a confirmed payment (called from the payment webhook handler).</summary>
-    Task MarkPaidAsync(string providerReference, CancellationToken ct = default);
+    Task MarkPaidAsync(string providerReference, string? providerEventId = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Records a non-success payment event (failed, refunded, unrecognised) on the sale's audit trail.
+    /// Does not change the order.
+    /// </summary>
+    Task RecordPaymentEventAsync(string providerReference, PaymentEventType eventType, string providerEventId, CancellationToken ct = default);
 }

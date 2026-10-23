@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Domain.Entities;
 using MoleculeByMakeover.Domain.Interfaces;
@@ -10,7 +11,8 @@ namespace MoleculeByMakeover.Application.Features.Catalog;
 public class CategoryService(
     IUnitOfWork unitOfWork,
     ICurrentLanguageService currentLanguage,
-    IValidator<CategoryUpsertRequest> validator) : ICategoryService
+    IValidator<CategoryUpsertRequest> validator,
+    ILogger<CategoryService> logger) : ICategoryService
 {
     public async Task<List<CategoryDto>> GetTreeAsync(CancellationToken ct = default)
     {
@@ -73,6 +75,7 @@ public class CategoryService(
 
         await unitOfWork.Categories.AddAsync(category, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Category {CategoryId} created", category.Id);
 
         return category.Id;
     }
@@ -96,6 +99,7 @@ public class CategoryService(
 
         unitOfWork.Categories.Update(category);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Category {CategoryId} updated", category.Id);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
@@ -114,6 +118,7 @@ public class CategoryService(
         category.DeletedAt = DateTimeOffset.UtcNow;
         unitOfWork.Categories.Update(category);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Category {CategoryId} deleted", category.Id);
     }
 
     private async Task ApplyTranslationsAsync(Category category, List<CategoryTranslationInput> translations, CancellationToken ct)

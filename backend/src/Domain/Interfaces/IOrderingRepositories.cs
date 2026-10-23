@@ -26,6 +26,12 @@ public interface IOrderRepository : IRepository<Order>
     Task<List<Order>> GetPendingExpiredReservationsAsync(DateTimeOffset asOf, CancellationToken ct = default);
 }
 
+public interface ISalesTransactionRepository : IRepository<SalesTransaction>
+{
+    Task<SalesTransaction?> GetByOrderIdAsync(Guid orderId, CancellationToken ct = default);
+    Task<SalesTransaction?> GetByPaymentReferenceAsync(string paymentReference, CancellationToken ct = default);
+}
+
 public interface IWishlistRepository : IRepository<Wishlist>
 {
     Task<Wishlist?> GetByUserIdAsync(Guid userId, CancellationToken ct = default);

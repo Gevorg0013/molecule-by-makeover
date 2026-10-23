@@ -1,13 +1,18 @@
 using AutoMapper;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Domain.Entities;
 using MoleculeByMakeover.Domain.Interfaces;
 using MoleculeByMakeover.Shared.Exceptions;
 
 namespace MoleculeByMakeover.Application.Features.Ordering;
 
-public class CouponService(IUnitOfWork unitOfWork, IMapper mapper, IValidator<CouponUpsertRequest> validator) : ICouponService
+public class CouponService(
+    IUnitOfWork unitOfWork,
+    IMapper mapper,
+    IValidator<CouponUpsertRequest> validator,
+    ILogger<CouponService> logger) : ICouponService
 {
     public async Task<List<CouponDto>> GetAllAsync(CancellationToken ct = default)
     {
@@ -44,6 +49,8 @@ public class CouponService(IUnitOfWork unitOfWork, IMapper mapper, IValidator<Co
 
         await unitOfWork.Coupons.AddAsync(coupon, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Coupon {CouponCode} ({CouponId}) created: {DiscountType} {DiscountValue}, active {IsActive}",
+            coupon.Code, coupon.Id, coupon.DiscountType, coupon.DiscountValue, coupon.IsActive);
         return coupon.Id;
     }
 
@@ -65,6 +72,8 @@ public class CouponService(IUnitOfWork unitOfWork, IMapper mapper, IValidator<Co
 
         unitOfWork.Coupons.Update(coupon);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Coupon {CouponCode} ({CouponId}) updated: {DiscountType} {DiscountValue}, active {IsActive}",
+            coupon.Code, coupon.Id, coupon.DiscountType, coupon.DiscountValue, coupon.IsActive);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
@@ -72,5 +81,6 @@ public class CouponService(IUnitOfWork unitOfWork, IMapper mapper, IValidator<Co
         var coupon = await unitOfWork.Coupons.GetByIdAsync(id, ct) ?? throw new NotFoundException(nameof(Coupon), id);
         unitOfWork.Coupons.Remove(coupon);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Coupon {CouponCode} ({CouponId}) deleted", coupon.Code, coupon.Id);
     }
 }

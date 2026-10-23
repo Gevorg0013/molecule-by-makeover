@@ -7,6 +7,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MoleculeByMakeover.API.Logging;
 using MoleculeByMakeover.API.Middleware;
 using MoleculeByMakeover.Application;
 using MoleculeByMakeover.Application.Common.Interfaces;
@@ -17,13 +18,27 @@ using MoleculeByMakeover.Infrastructure.Persistence;
 using MoleculeByMakeover.Infrastructure.Persistence.Seed;
 using MoleculeByMakeover.Shared.Constants;
 using Serilog;
+using Serilog.Configuration;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseSerilog((context, services, configuration) => configuration
-    .ReadFrom.Configuration(context.Configuration)
-    .ReadFrom.Services(services)
-    .Enrich.FromLogContext());
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext();
+
+    // Also persist log events to the AppLogs table (see DatabaseLogSink), at or above the configured level.
+    if (context.Configuration.GetValue("DatabaseLogging:Enabled", true))
+    {
+        configuration.WriteTo.Sink(
+            new DatabaseLogSink(context.Configuration.GetConnectionString("DefaultConnection")!),
+            new BatchingOptions { BatchSizeLimit = 200, BufferingTimeLimit = TimeSpan.FromSeconds(2), QueueLimit = 10_000 },
+            context.Configuration.GetValue("DatabaseLogging:MinimumLevel", LogEventLevel.Information));
+    }
+});
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -140,7 +155,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "Molecule by Makeover API v1"));
 }
 
-app.UseSerilogRequestLogging();
+// Tag every request-completion log with the caller so admin changes and failures can be traced
+// to an account. Evaluated after the pipeline runs, so authentication has populated the user.
+app.UseSerilogRequestLogging(options => options.EnrichDiagnosticContext = (diagnostics, httpContext) =>
+{
+    diagnostics.Set("UserId", httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+        ?? httpContext.User.FindFirst("sub")?.Value);
+    diagnostics.Set("ClientIp", httpContext.Connection.RemoteIpAddress?.ToString());
+});
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 //app.UseHttpsRedirection();
@@ -171,6 +193,7 @@ app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<UserLogContextMiddleware>();
 
 app.MapControllers();
 app.MapHealthChecks("/health");

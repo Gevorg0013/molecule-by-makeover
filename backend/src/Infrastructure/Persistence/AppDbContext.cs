@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<AuthenticationLog> AuthenticationLogs => Set<AuthenticationLog>();
 
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<CategoryTranslation> CategoryTranslations => Set<CategoryTranslation>();
@@ -27,6 +28,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Coupon> Coupons => Set<Coupon>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<SalesTransaction> SalesTransactions => Set<SalesTransaction>();
+    public DbSet<SalesTransactionEvent> SalesTransactionEvents => Set<SalesTransactionEvent>();
     public DbSet<Review> Reviews => Set<Review>();
 
     public DbSet<BlogPost> BlogPosts => Set<BlogPost>();
@@ -39,6 +42,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Setting> Settings => Set<Setting>();
     public DbSet<NewsletterSubscriber> NewsletterSubscribers => Set<NewsletterSubscriber>();
     public DbSet<ProcessedPaymentEvent> ProcessedPaymentEvents => Set<ProcessedPaymentEvent>();
+    public DbSet<AppLog> AppLogs => Set<AppLog>();
+    public DbSet<DataChangeLog> DataChangeLogs => Set<DataChangeLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

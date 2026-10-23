@@ -41,6 +41,16 @@ public class OrderRepository(AppDbContext context) : Repository<Order>(context),
             .ToListAsync(ct);
 }
 
+// Events are appended via IUnitOfWork.TrackNew rather than loaded, so these return the header only.
+public class SalesTransactionRepository(AppDbContext context) : Repository<SalesTransaction>(context), ISalesTransactionRepository
+{
+    public async Task<SalesTransaction?> GetByOrderIdAsync(Guid orderId, CancellationToken ct = default) =>
+        await DbSet.FirstOrDefaultAsync(t => t.OrderId == orderId, ct);
+
+    public async Task<SalesTransaction?> GetByPaymentReferenceAsync(string paymentReference, CancellationToken ct = default) =>
+        await DbSet.FirstOrDefaultAsync(t => t.PaymentReference == paymentReference, ct);
+}
+
 public class WishlistRepository(AppDbContext context) : Repository<Wishlist>(context), IWishlistRepository
 {
     public async Task<Wishlist?> GetByUserIdAsync(Guid userId, CancellationToken ct = default) =>

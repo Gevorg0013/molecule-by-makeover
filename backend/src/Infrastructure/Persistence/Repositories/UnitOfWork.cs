@@ -15,6 +15,7 @@ public class UnitOfWork(AppDbContext context) : IUnitOfWork
     private ICartRepository? _carts;
     private ICouponRepository? _coupons;
     private IOrderRepository? _orders;
+    private ISalesTransactionRepository? _salesTransactions;
     private IWishlistRepository? _wishlists;
     private IReviewRepository? _reviews;
     private IBlogPostRepository? _blogPosts;
@@ -36,6 +37,7 @@ public class UnitOfWork(AppDbContext context) : IUnitOfWork
     public ICartRepository Carts => _carts ??= new CartRepository(context);
     public ICouponRepository Coupons => _coupons ??= new CouponRepository(context);
     public IOrderRepository Orders => _orders ??= new OrderRepository(context);
+    public ISalesTransactionRepository SalesTransactions => _salesTransactions ??= new SalesTransactionRepository(context);
     public IWishlistRepository Wishlists => _wishlists ??= new WishlistRepository(context);
     public IReviewRepository Reviews => _reviews ??= new ReviewRepository(context);
     public IBlogPostRepository BlogPosts => _blogPosts ??= new BlogPostRepository(context);

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Domain.Entities;
+using MoleculeByMakeover.Domain.Enums;
 using MoleculeByMakeover.Domain.Interfaces;
 using MoleculeByMakeover.Shared.Constants;
 using MoleculeByMakeover.Shared.Exceptions;
@@ -13,16 +14,56 @@ public class CheckoutService(
     IUnitOfWork unitOfWork,
     IPaymentProviderResolver paymentProviderResolver,
     IValidator<CheckoutRequest> validator,
+    ISalesTransactionWriter salesTransactionWriter,
     ILogger<CheckoutService> logger) : ICheckoutService
 {
     public async Task<CheckoutResultDto> PlaceOrderAsync(
         Guid userId, string? guestToken, CheckoutRequest request, string returnUrl, string cancelUrl, CancellationToken ct = default)
+    {
+        // Every attempt gets a sales transaction: saved with the order on success, or on its own
+        // (without the request's other pending changes) when the attempt is rejected.
+        var sale = new SalesTransaction
+        {
+            UserId = userId,
+            PaymentProvider = request.PaymentProviderKey ?? string.Empty,
+            StartedAt = DateTimeOffset.UtcNow
+        };
+        sale.Record(SalesTransactionEventType.CheckoutStarted, SalesEventSource.Customer, "Checkout started",
+            new { request.PaymentProviderKey }, actorUserId: userId);
+
+        try
+        {
+            return await PlaceOrderAsync(sale, userId, request, returnUrl, cancelUrl, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Only messages we wrote ourselves are stored; validation details may echo customer input.
+            var reason = ex switch
+            {
+                ValidationException => "The checkout request was invalid.",
+                AppException => ex.Message,
+                _ => "Unexpected error while placing the order."
+            };
+            sale.FailureReason = reason.Length <= 500 ? reason : reason[..500];
+            sale.Record(SalesTransactionEventType.CheckoutRejected, SalesEventSource.System, reason,
+                new { ExceptionType = ex.GetType().Name }, succeeded: false);
+            sale.Complete(SalesTransactionStatus.Rejected);
+
+            await salesTransactionWriter.WriteFailedAttemptAsync(sale, ct);
+            throw;
+        }
+    }
+
+    private async Task<CheckoutResultDto> PlaceOrderAsync(
+        SalesTransaction sale, Guid userId, CheckoutRequest request, string returnUrl, string cancelUrl, CancellationToken ct)
     {
         await validator.ValidateAndThrowAsync(request, ct);
 
         var cart = await unitOfWork.Carts.GetActiveByUserIdAsync(userId, ct);
         if (cart is null || cart.Items.Count == 0)
             throw new BadRequestException("Your cart is empty.");
+
+        sale.ItemCount = cart.Items.Count;
 
         // Re-validate stock and re-check the coupon server-side; never trust client-computed totals.
         foreach (var item in cart.Items)
@@ -38,6 +79,8 @@ public class CheckoutService(
         var discountTotal = 0m;
         if (cart.Coupon is not null)
         {
+            sale.CouponCode = cart.Coupon.Code;
+
             if (!cart.Coupon.IsValidNow())
                 throw new BadRequestException("The applied coupon is no longer valid.");
 
@@ -51,11 +94,22 @@ public class CheckoutService(
 
             cart.Coupon.UsesCount++;
             unitOfWork.Coupons.Update(cart.Coupon);
+
+            sale.Record(SalesTransactionEventType.CouponApplied, SalesEventSource.Customer, $"Coupon {cart.Coupon.Code} applied",
+                new { cart.Coupon.Code, cart.Coupon.DiscountType, cart.Coupon.DiscountValue, DiscountTotal = discountTotal });
         }
 
+        var couponCode = cart.Coupon?.Code;
         const decimal shippingTotal = 0m; // flat-rate/free shipping for launch; extend with shipping zones later.
         var grandTotal = subTotal - discountTotal + shippingTotal;
         var orderNumber = GenerateOrderNumber();
+
+        sale.OrderNumber = orderNumber;
+        sale.SubTotal = subTotal;
+        sale.DiscountTotal = discountTotal;
+        sale.ShippingTotal = shippingTotal;
+        sale.GrandTotal = grandTotal;
+        sale.Currency = StoreDefaults.Currency;
 
         // Create the payment session BEFORE writing anything to the database. If the payment
         // provider is unreachable or misconfigured, the customer sees a clean error and their
@@ -70,8 +124,15 @@ public class CheckoutService(
         catch (Exception ex) when (ex is not BadRequestException)
         {
             logger.LogError(ex, "Payment session creation failed for order {OrderNumber} via provider {Provider}", orderNumber, request.PaymentProviderKey);
+            sale.Record(SalesTransactionEventType.PaymentSessionFailed, SalesEventSource.PaymentProvider,
+                $"Payment session could not be created ({ex.GetType().Name})",
+                new { Amount = grandTotal, Currency = StoreDefaults.Currency }, succeeded: false);
             throw new BadRequestException("We couldn't start the payment process. Please try again in a moment.");
         }
+
+        sale.PaymentReference = session.ProviderReference;
+        sale.Record(SalesTransactionEventType.PaymentSessionCreated, SalesEventSource.PaymentProvider, "Payment session created",
+            new { Amount = grandTotal, Currency = StoreDefaults.Currency, session.ProviderReference });
 
         var order = new Order
         {
@@ -90,6 +151,7 @@ public class CheckoutService(
             StockReservationExpiresAt = DateTimeOffset.UtcNow.AddMinutes(StoreDefaults.StockReservationMinutes)
         };
 
+        var reserved = new List<object>();
         foreach (var item in cart.Items)
         {
             order.Items.Add(new OrderItem
@@ -104,15 +166,36 @@ public class CheckoutService(
             });
 
             // Reserve stock immediately; released by the expiry job if payment never completes.
+            var stockBefore = item.Product.Stock;
             item.Product.Stock -= item.Quantity;
+            reserved.Add(new
+            {
+                item.ProductId, item.Product.Sku, item.Quantity, UnitPrice = item.UnitPriceSnapshot,
+                LineTotal = item.UnitPriceSnapshot * item.Quantity, StockBefore = stockBefore, StockAfter = item.Product.Stock
+            });
         }
 
         await unitOfWork.Orders.AddAsync(order, ct);
+
+        sale.OrderId = order.Id;
+        sale.Status = SalesTransactionStatus.AwaitingPayment;
+        sale.Record(SalesTransactionEventType.OrderCreated, SalesEventSource.Customer, $"Order {orderNumber} created",
+            new { order.Id, orderNumber, SubTotal = subTotal, DiscountTotal = discountTotal, ShippingTotal = shippingTotal, GrandTotal = grandTotal, order.Currency, CouponCode = couponCode },
+            actorUserId: userId);
+        sale.Record(SalesTransactionEventType.StockReserved, SalesEventSource.System,
+            $"Stock reserved until {order.StockReservationExpiresAt:u}", new { Items = reserved, order.StockReservationExpiresAt });
+        // Saved in the same SaveChanges as the order, so the trail and the order can't disagree.
+        unitOfWork.TrackNew(sale);
 
         cart.Items.Clear();
         cart.CouponId = null;
 
         await unitOfWork.SaveChangesAsync(ct);
+
+        logger.LogInformation(
+            "Order {OrderNumber} ({OrderId}) placed by user {UserId}: {ItemCount} item(s), subtotal {SubTotal}, discount {DiscountTotal}, total {GrandTotal} {Currency}, coupon {CouponCode}, provider {Provider}, payment ref {PaymentReference}",
+            order.OrderNumber, order.Id, userId, order.Items.Count, subTotal, discountTotal, grandTotal, order.Currency,
+            couponCode, request.PaymentProviderKey, session.ProviderReference);
 
         return new CheckoutResultDto(order.OrderNumber, session.ClientSecret, session.RedirectUrl, order.GrandTotal, order.Currency);
     }

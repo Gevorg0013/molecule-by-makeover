@@ -9,7 +9,8 @@ namespace MoleculeByMakeover.API.Controllers;
 public class PaymentsController(
     IPaymentProviderResolver paymentProviderResolver,
     IOrderService orderService,
-    IUnitOfWork unitOfWork) : ApiControllerBase
+    IUnitOfWork unitOfWork,
+    ILogger<PaymentsController> logger) : ApiControllerBase
 {
     [HttpPost("webhook/{provider}")]
     public async Task<IActionResult> Webhook(string provider, CancellationToken ct)
@@ -22,14 +23,22 @@ public class PaymentsController(
         var result = await paymentProvider.HandleWebhookAsync(rawBody, headers, ct);
 
         if (!result.IsValid)
+        {
+            logger.LogWarning("Rejected invalid {Provider} payment webhook", provider);
             return BadRequest();
+        }
 
         // Idempotency: a retried webhook delivery for an already-processed event is a no-op.
         if (await unitOfWork.ProcessedPaymentEvents.HasBeenProcessedAsync(provider, result.EventId, ct))
+        {
+            logger.LogInformation("Skipped duplicate {Provider} payment event {EventId}", provider, result.EventId);
             return Ok();
+        }
 
         if (result.EventType == PaymentEventType.PaymentSucceeded)
-            await orderService.MarkPaidAsync(result.ProviderReference, ct);
+            await orderService.MarkPaidAsync(result.ProviderReference, result.EventId, ct);
+        else
+            await orderService.RecordPaymentEventAsync(result.ProviderReference, result.EventType, result.EventId, ct);
 
         await unitOfWork.ProcessedPaymentEvents.AddAsync(new ProcessedPaymentEvent
         {
@@ -39,6 +48,8 @@ public class PaymentsController(
         }, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
+        logger.LogInformation("Processed {Provider} payment event {EventId} ({EventType}) for {PaymentReference}",
+            provider, result.EventId, result.EventType, result.ProviderReference);
         return Ok();
     }
 }

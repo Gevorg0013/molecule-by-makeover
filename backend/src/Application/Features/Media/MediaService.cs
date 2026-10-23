@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Domain.Entities;
 using MoleculeByMakeover.Domain.Interfaces;
@@ -7,7 +8,11 @@ using MoleculeByMakeover.Shared.Exceptions;
 
 namespace MoleculeByMakeover.Application.Features.Media;
 
-public class MediaService(IUnitOfWork unitOfWork, IFileStorageService fileStorageService, IMapper mapper) : IMediaService
+public class MediaService(
+    IUnitOfWork unitOfWork,
+    IFileStorageService fileStorageService,
+    IMapper mapper,
+    ILogger<MediaService> logger) : IMediaService
 {
     private const long MaxSizeBytes = 10 * 1024 * 1024;
 
@@ -59,6 +64,8 @@ public class MediaService(IUnitOfWork unitOfWork, IFileStorageService fileStorag
 
         await unitOfWork.GalleryImages.AddAsync(image, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Image {ImageId} uploaded to {Folder} by {UserId}: {Url} ({SizeBytes} bytes, {MimeType})",
+            image.Id, folder, uploadedByUserId, image.Url, image.SizeBytes, image.MimeType);
 
         return mapper.Map<GalleryImageDto>(image);
     }
@@ -69,6 +76,7 @@ public class MediaService(IUnitOfWork unitOfWork, IFileStorageService fileStorag
         await fileStorageService.DeleteAsync(image.Url, ct);
         unitOfWork.GalleryImages.Remove(image);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Image {ImageId} deleted: {Url}", image.Id, image.Url);
     }
 
     // A declared content type is just a client-supplied header, so confirm the bytes agree with it.

@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Domain.Entities;
 using MoleculeByMakeover.Domain.Interfaces;
@@ -10,7 +11,8 @@ namespace MoleculeByMakeover.Application.Features.Content;
 public class PageService(
     IUnitOfWork unitOfWork,
     ICurrentLanguageService currentLanguage,
-    IValidator<PageUpsertRequest> validator) : IPageService
+    IValidator<PageUpsertRequest> validator,
+    ILogger<PageService> logger) : IPageService
 {
     public async Task<PageDto> GetByKeyAsync(string key, CancellationToken ct = default)
     {
@@ -49,6 +51,7 @@ public class PageService(
 
         await unitOfWork.Pages.AddAsync(page, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Page {PageKey} ({PageId}) created, published {IsPublished}", page.Key, page.Id, page.IsPublished);
         return page.Id;
     }
 
@@ -68,6 +71,7 @@ public class PageService(
 
         unitOfWork.Pages.Update(page);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Page {PageKey} ({PageId}) updated, published {IsPublished}", page.Key, page.Id, page.IsPublished);
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
@@ -75,6 +79,7 @@ public class PageService(
         var page = await unitOfWork.Pages.GetByIdAsync(id, ct) ?? throw new NotFoundException(nameof(Page), id);
         unitOfWork.Pages.Remove(page);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Page {PageKey} ({PageId}) deleted", page.Key, page.Id);
     }
 
     private async Task ApplyTranslationsAsync(Page page, List<PageTranslationInput> translations, CancellationToken ct)

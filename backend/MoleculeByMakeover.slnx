@@ -15,4 +15,7 @@
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/MoleculeByMakeover.Shared.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MoleculeByMakeover.Tests/MoleculeByMakeover.Tests.csproj" />
+  </Folder>
 </Solution>

@@ -16,6 +16,26 @@ public class LanguageConfiguration : IEntityTypeConfiguration<Language>
     }
 }
 
+// No foreign key to Users: the trail must outlive account changes and must also record attempts
+// against emails that match no account.
+public class AuthenticationLogConfiguration : IEntityTypeConfiguration<AuthenticationLog>
+{
+    public void Configure(EntityTypeBuilder<AuthenticationLog> builder)
+    {
+        builder.ToTable("AuthenticationLogs");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Email).HasMaxLength(256).IsRequired();
+        builder.Property(x => x.IpAddress).HasMaxLength(45);
+        builder.Property(x => x.UserAgent).HasMaxLength(512);
+
+        // Lookups are "recent attempts for this account / email / address", newest first.
+        builder.HasIndex(x => x.OccurredAt);
+        builder.HasIndex(x => new { x.UserId, x.OccurredAt });
+        builder.HasIndex(x => new { x.Email, x.OccurredAt });
+        builder.HasIndex(x => new { x.IpAddress, x.OccurredAt });
+    }
+}
+
 public class RoleConfiguration : IEntityTypeConfiguration<Role>
 {
     public void Configure(EntityTypeBuilder<Role> builder)

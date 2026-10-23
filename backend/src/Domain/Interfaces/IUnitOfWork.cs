@@ -15,6 +15,7 @@ public interface IUnitOfWork
     ICartRepository Carts { get; }
     ICouponRepository Coupons { get; }
     IOrderRepository Orders { get; }
+    ISalesTransactionRepository SalesTransactions { get; }
     IWishlistRepository Wishlists { get; }
     IReviewRepository Reviews { get; }
 

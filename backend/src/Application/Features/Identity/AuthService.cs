@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using MoleculeByMakeover.Application.Common.Interfaces;
 using MoleculeByMakeover.Application.Common.Options;
 using MoleculeByMakeover.Domain.Entities;
+using MoleculeByMakeover.Domain.Enums;
 using MoleculeByMakeover.Domain.Interfaces;
 using MoleculeByMakeover.Shared.Constants;
 using MoleculeByMakeover.Shared.Exceptions;
@@ -20,6 +21,7 @@ public class AuthService(
     IValidator<ForgotPasswordRequest> forgotPasswordValidator,
     IValidator<ResetPasswordRequest> resetPasswordValidator,
     IEmailSender emailSender,
+    IAuthenticationLogWriter authenticationLog,
     IConfiguration configuration,
     IOptions<JwtOptions> jwtOptions,
     Microsoft.Extensions.Logging.ILogger<AuthService> logger) : IAuthService
@@ -60,6 +62,7 @@ public class AuthService(
         await unitOfWork.Users.AddAsync(user, ct);
         await unitOfWork.SaveChangesAsync(ct);
 
+        logger.LogInformation("User {UserId} registered from {IpAddress}", user.Id, ipAddress);
         return await IssueTokensAsync(user, [RoleNames.Customer], ipAddress, ct);
     }
 
@@ -68,11 +71,28 @@ public class AuthService(
         await loginValidator.ValidateAndThrowAsync(request, ct);
 
         var user = await unitOfWork.Users.GetByEmailAsync(request.Email.Trim().ToLowerInvariant(), ct);
-        if (user is null || !user.IsActive || !passwordHasher.Verify(user.PasswordHash, request.Password))
-            throw new UnauthorizedException();
+        AuthenticationFailureReason? failureReason =
+            user is null ? AuthenticationFailureReason.UnknownAccount
+            : !user.IsActive ? AuthenticationFailureReason.AccountInactive
+            : !passwordHasher.Verify(user.PasswordHash, request.Password) ? AuthenticationFailureReason.InvalidPassword
+            : null;
 
-        var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
-        return await IssueTokensAsync(user, roles, ipAddress, ct);
+        if (failureReason is not null)
+        {
+            // The email is not logged; the user id (when the account exists) is enough to spot brute forcing.
+            logger.LogWarning("Failed login for {UserId} from {IpAddress} ({Reason})", user?.Id, ipAddress, failureReason);
+            await authenticationLog.WriteAsync(NewAuthenticationLog(request.Email, user?.Id, failureReason, ipAddress), ct);
+
+            // Same response for every reason, so callers can't tell whether the email is registered.
+            throw new UnauthorizedException();
+        }
+
+        var roles = user!.UserRoles.Select(ur => ur.Role.Name).ToList();
+        var result = await IssueTokensAsync(user, roles, ipAddress, ct);
+
+        logger.LogInformation("User {UserId} logged in from {IpAddress}", user.Id, ipAddress);
+        await authenticationLog.WriteAsync(NewAuthenticationLog(request.Email, user.Id, null, ipAddress), ct);
+        return result;
     }
 
     public async Task<AuthResult> RefreshAsync(string rawRefreshToken, string? ipAddress, CancellationToken ct = default)
@@ -87,6 +107,8 @@ public class AuthService(
         {
             // Reuse of an already-rotated token: possible theft. Revoke the whole family.
             await RevokeAllActiveTokensForUserAsync(existingToken.UserId, ct);
+            logger.LogWarning("Refresh token reuse detected for user {UserId} from {IpAddress}; all sessions revoked",
+                existingToken.UserId, ipAddress);
             throw new UnauthorizedException("Refresh token has already been used. All sessions have been revoked.");
         }
 
@@ -133,6 +155,8 @@ public class AuthService(
         existingToken.RevokedAt = DateTimeOffset.UtcNow;
         unitOfWork.RefreshTokens.Update(existingToken);
         await unitOfWork.SaveChangesAsync(ct);
+
+        logger.LogInformation("User {UserId} logged out", existingToken.UserId);
     }
 
     public async Task ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken ct = default)
@@ -153,6 +177,7 @@ public class AuthService(
         };
         await unitOfWork.PasswordResetTokens.AddAsync(resetToken, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Password reset requested for user {UserId}", user.Id);
 
         var baseUrl = configuration["Frontend:BaseUrl"]!.TrimEnd('/');
         var resetLink = $"{baseUrl}/reset-password?email={Uri.EscapeDataString(user.Email)}&token={Uri.EscapeDataString(rawToken)}";
@@ -183,7 +208,10 @@ public class AuthService(
 
         if (user is null || resetToken is null || resetToken.UserId != user.Id
             || resetToken.UsedAt is not null || resetToken.ExpiresAt <= DateTimeOffset.UtcNow)
+        {
+            logger.LogWarning("Password reset rejected for {UserId}: invalid or expired token", user?.Id);
             throw new BadRequestException("Invalid or expired reset token.");
+        }
 
         user.PasswordHash = passwordHasher.Hash(request.NewPassword);
         unitOfWork.Users.Update(user);
@@ -193,6 +221,8 @@ public class AuthService(
 
         await RevokeAllActiveTokensForUserAsync(user.Id, ct);
         await unitOfWork.SaveChangesAsync(ct);
+
+        logger.LogInformation("Password reset completed for user {UserId}; all sessions revoked", user.Id);
     }
 
     private async Task<AuthResult> IssueTokensAsync(User user, IReadOnlyList<string> roles, string? ipAddress, CancellationToken ct)
@@ -232,6 +262,17 @@ public class AuthService(
 
         await unitOfWork.SaveChangesAsync(ct);
     }
+
+    private static AuthenticationLog NewAuthenticationLog(
+        string email, Guid? userId, AuthenticationFailureReason? failureReason, string? ipAddress) => new()
+    {
+        Email = email.Trim().ToLowerInvariant(),
+        UserId = userId,
+        Succeeded = failureReason is null,
+        FailureReason = failureReason,
+        IpAddress = ipAddress,
+        OccurredAt = DateTimeOffset.UtcNow
+    };
 
     private static UserProfileDto ToProfile(User user, IReadOnlyList<string> roles) =>
         new(user.Id, user.Email, user.FirstName, user.LastName, user.PhoneNumber, roles);

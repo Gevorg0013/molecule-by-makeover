@@ -1,12 +1,13 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MoleculeByMakeover.Domain.Entities;
 using MoleculeByMakeover.Domain.Interfaces;
 using MoleculeByMakeover.Shared.Exceptions;
 
 namespace MoleculeByMakeover.Application.Features.Reviews;
 
-public class ReviewService(IUnitOfWork unitOfWork, IValidator<CreateReviewRequest> validator) : IReviewService
+public class ReviewService(IUnitOfWork unitOfWork, IValidator<CreateReviewRequest> validator, ILogger<ReviewService> logger) : IReviewService
 {
     public async Task<List<ReviewDto>> GetApprovedForProductAsync(Guid productId, CancellationToken ct = default)
     {
@@ -40,6 +41,8 @@ public class ReviewService(IUnitOfWork unitOfWork, IValidator<CreateReviewReques
 
         await unitOfWork.Reviews.AddAsync(review, ct);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Review {ReviewId} submitted for product {ProductId} by user {UserId}, rating {Rating}",
+            review.Id, productId, userId, review.Rating);
         return review.Id;
     }
 
@@ -58,6 +61,7 @@ public class ReviewService(IUnitOfWork unitOfWork, IValidator<CreateReviewReques
         review.IsApproved = true;
         unitOfWork.Reviews.Update(review);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Review {ReviewId} approved", review.Id);
     }
 
     public async Task DeleteAsync(Guid reviewId, CancellationToken ct = default)
@@ -65,6 +69,7 @@ public class ReviewService(IUnitOfWork unitOfWork, IValidator<CreateReviewReques
         var review = await unitOfWork.Reviews.GetByIdAsync(reviewId, ct) ?? throw new NotFoundException(nameof(Review), reviewId);
         unitOfWork.Reviews.Remove(review);
         await unitOfWork.SaveChangesAsync(ct);
+        logger.LogInformation("Review {ReviewId} deleted", review.Id);
     }
 
     private static ReviewDto ToDto(Review r) => new(r.Id, r.ProductId, r.UserId, r.User.FullName, r.Rating, r.Comment, r.IsApproved, r.CreatedAt);
