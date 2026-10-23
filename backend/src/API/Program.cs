@@ -142,7 +142,13 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasherService>();
-    await DbSeeder.SeedAsync(dbContext, passwordHasher);
+    var storage = scope.ServiceProvider.GetRequiredService<IOptions<FileStorageOptions>>().Value;
+    var storageRoot = Path.GetFullPath(storage.RootPath, app.Environment.ContentRootPath);
+    var storageBaseUrl = storage.PublicBaseUrl.TrimEnd('/') + "/";
+    await DbSeeder.SeedAsync(dbContext, passwordHasher, url =>
+        !string.IsNullOrEmpty(url) && (Uri.TryCreate(url, UriKind.Absolute, out _)
+            || (url.StartsWith(storageBaseUrl, StringComparison.OrdinalIgnoreCase)
+                && File.Exists(Path.Combine(storageRoot, url[storageBaseUrl.Length..])))));
 
     var languageCache = scope.ServiceProvider.GetRequiredService<LanguageCache>();
     var unitOfWork = scope.ServiceProvider.GetRequiredService<MoleculeByMakeover.Domain.Interfaces.IUnitOfWork>();

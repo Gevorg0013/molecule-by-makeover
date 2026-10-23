@@ -1,0 +1,550 @@
+{
+    "Banners": [
+        {
+            "Id": "3fbd8d6b-5e51-4de4-979f-7132575c28b6",
+            "EndsAt": null,
+            "ImageUrl": "/uploads/banners/7cf17952956e44c6a2e4f4e4a86c157f.png",
+            "IsActive": true,
+            "StartsAt": null,
+            "CreatedAt": "2026-10-19T11:12:16.111935+00:00",
+            "SortOrder": 0,
+            "Translations": [
+                {
+                    "Title": "",
+                    "CtaText": "",
+                    "Language": {
+                        "Code": "en"
+                    },
+                    "Subtitle": ""
+                },
+                {
+                    "Title": "",
+                    "CtaText": "",
+                    "Language": {
+                        "Code": "hy"
+                    },
+                    "Subtitle": ""
+                },
+                {
+                    "Title": "",
+                    "CtaText": "",
+                    "Language": {
+                        "Code": "ru"
+                    },
+                    "Subtitle": ""
+                }
+            ]
+        },
+        {
+            "Id": "c74d0c4f-5ca5-40fa-a40f-99b977f949a8",
+            "EndsAt": null,
+            "ImageUrl": "/uploads/banners/d18f8bc7ddf2478aa6b42e7fd8dd4501.webp",
+            "IsActive": true,
+            "StartsAt": null,
+            "CreatedAt": "2026-10-20T08:08:56.297076+00:00",
+            "SortOrder": 0,
+            "Translations": [
+                {
+                    "Title": "",
+                    "CtaText": "",
+                    "Language": {
+                        "Code": "en"
+                    },
+                    "Subtitle": ""
+                },
+                {
+                    "Title": "",
+                    "CtaText": "",
+                    "Language": {
+                        "Code": "hy"
+                    },
+                    "Subtitle": ""
+                },
+                {
+                    "Title": "",
+                    "CtaText": "",
+                    "Language": {
+                        "Code": "ru"
+                    },
+                    "Subtitle": ""
+                }
+            ]
+        }
+    ],
+    "Products": [
+        {
+            "Sku": "MBM-BRD-001",
+            "Brand": "Molecule by Makeover",
+            "Price": 9800.00,
+            "Stock": 80,
+            "Images": [
+                {
+                    "Url": "/uploads/gallery/12182f28412d4fbfb1957c76192d8bdf.jpg",
+                    "AltText": "beard-oil.jpg",
+                    "IsPrimary": true,
+                    "SortOrder": 0
+                }
+            ],
+            "IsActive": true,
+            "CreatedAt": "2026-07-29T09:29:52.362739+00:00",
+            "CategoryId": "e2276c5e-0243-4212-8a5e-63c9f08fabc5",
+            "IsFeatured": true,
+            "DiscountType": 0,
+            "IsBestSeller": false,
+            "MainImageUrl": "/uploads/gallery/12182f28412d4fbfb1957c76192d8bdf.jpg",
+            "Translations": [
+                {
+                    "Name": "Beard Oil",
+                    "Slug": "beard-oil",
+                    "Benefits": "Softens beard hair; reduces itchiness; adds natural shine.",
+                    "Language": {
+                        "Code": "en"
+                    },
+                    "MetaTitle": null,
+                    "Description": "A fast-absorbing blend of argan and jojoba oils that conditions skin and beard hair alike.",
+                    "Ingredients": "Argan Oil, Jojoba Oil, Vitamin E, Sandalwood Fragrance.",
+                    "MetaDescription": null,
+                    "ShortDescription": "Nourishing oil blend for a softer, healthier beard.",
+                    "UsageInstructions": "Apply 3-4 drops to palms, work through beard and skin daily."
+                },
+                {
+                    "Name": "Մորուքի յուղ",
+                    "Slug": "morowqi-yugh",
+                    "Benefits": "Փափկացնում է մորուքը, նվազեցնում է քորը, հաղորդում է բնական փայլ։",
+                    "Language": {
+                        "Code": "hy"
+                    },
+                    "MetaTitle": null,
+                    "Description": "Արգանի և ժոժոբայի յուղերի արագ ներծծվող խառնուրդ՝ մաշկի և մորուքի համար։",
+                    "Ingredients": "Արգանի յուղ, Ժոժոբայի յուղ, Վիտամին E, Սանդալի բույր։",
+                    "MetaDescription": null,
+                    "ShortDescription": "Սնուցող յուղերի խառնուրդ փափուկ և առողջ մորուքի համար։",
+                    "UsageInstructions": "Կիրառել 3-4 կաթիլ ափերին և տարածել մորուքի ու մաշկի վրա ամեն օր։"
+                },
+                {
+                    "Name": "Масло для бороды",
+                    "Slug": "maslo-dlya-borody",
+                    "Benefits": "Смягчает бороду; уменьшает зуд; придаёт естественный блеск.",
+                    "Language": {
+                        "Code": "ru"
+                    },
+                    "MetaTitle": null,
+                    "Description": "Быстро впитывающаяся смесь масел арганы и жожоба, ухаживающая за кожей и волосами бороды.",
+                    "Ingredients": "Масло арганы, масло жожоба, витамин E, аромат сандала.",
+                    "MetaDescription": null,
+                    "ShortDescription": "Питательная смесь масел для мягкой и здоровой бороды.",
+                    "UsageInstructions": "Нанести 3-4 капли на ладони и распределить по бороде и коже ежедневно."
+                }
+            ],
+            "DiscountValue": null
+        },
+        {
+            "Sku": "Reuzel",
+            "Brand": "Reuzel",
+            "Price": 15000.00,
+            "Stock": 4,
+            "Images": [
+            ],
+            "IsActive": true,
+            "CreatedAt": "2026-08-12T08:04:59.686711+00:00",
+            "CategoryId": "e2276c5e-0243-4212-8a5e-63c9f08fabc5",
+            "IsFeatured": true,
+            "DiscountType": 0,
+            "IsBestSeller": false,
+            "MainImageUrl": "/uploads/products/c2710069251e48e79d3ada3097eb2606.webp",
+            "Translations": [
+                {
+                    "Name": "Reuzel",
+                    "Slug": "dior-foundation",
+                    "Benefits": "",
+                    "Language": {
+                        "Code": "en"
+                    },
+                    "MetaTitle": "",
+                    "Description": "this is the board helper",
+                    "Ingredients": "",
+                    "MetaDescription": "",
+                    "ShortDescription": "",
+                    "UsageInstructions": ""
+                }
+            ],
+            "DiscountValue": null
+        },
+        {
+            "Sku": "AK-122-111",
+            "Brand": "Kerastas",
+            "Price": 15900.00,
+            "Stock": 42,
+            "Images": [
+            ],
+            "IsActive": true,
+            "CreatedAt": "2026-08-17T10:31:47.42302+00:00",
+            "CategoryId": "6653a296-0398-4d08-b0ba-4286fca76a7d",
+            "IsFeatured": false,
+            "DiscountType": 2,
+            "IsBestSeller": false,
+            "MainImageUrl": "/uploads/products/0d02f5bea51d497891ddce7fb7733de8.webp",
+            "Translations": [
+                {
+                    "Name": "Kerastaas",
+                    "Slug": "AK-122-111",
+                    "Benefits": "",
+                    "Language": {
+                        "Code": "en"
+                    },
+                    "MetaTitle": "",
+                    "Description": "Nutritive Bain Satin Riche Shampoo pampers dry hair with a highly concentrated formula enriched with plant proteins and niacinamide. It thoroughly cleanses the hair while improving the moisture content and supporting keratin production. In addition, the moisturising shampoo revitalises the hair so that it gains thickness. The hair feels smoother and shinier.",
+                    "Ingredients": "Nutritive Bain Satin Riche Shampoo pampers dry hair with a highly concentrated formula enriched with plant proteins and niacinamide. It thoroughly cleanses the hair while improving the moisture content and supporting keratin production. In addition, the moisturising shampoo revitalises the hair so that it gains thickness. The hair feels smoother and shinier.",
+                    "MetaDescription": "",
+                    "ShortDescription": "",
+                    "UsageInstructions": "Nutritive Bain Satin Riche Shampoo pampers dry hair with a highly concentrated formula enriched with plant proteins and niacinamide. It thoroughly cleanses the hair while improving the moisture content and supporting keratin production. In addition, the moisturising shampoo revitalises the hair so that it gains thickness. The hair feels smoother and shinier."
+                }
+            ],
+            "DiscountValue": 0.05
+        },
+        {
+            "Sku": "HS0026",
+            "Brand": "Reuzel",
+            "Price": 15000.00,
+            "Stock": 0,
+            "Images": [
+            ],
+            "IsActive": true,
+            "CreatedAt": "2026-10-20T06:22:17.288301+00:00",
+            "CategoryId": "e2276c5e-0243-4212-8a5e-63c9f08fabc5",
+            "IsFeatured": true,
+            "DiscountType": 0,
+            "IsBestSeller": false,
+            "MainImageUrl": "/uploads/products/174cc90546e64deb9e82a0989b4aed8c.webp",
+            "Translations": [
+                {
+                    "Name": "NEW Rosemary Mint Hair & Scalp Serum 5.0 star rating 4 Reviews",
+                    "Slug": "HCssda21312234",
+                    "Benefits": "REUZEL Rosemary Mint Hair & Scalp Serum is a lightweight, fast-absorbing serum for the appearance of denser, thicker-looking hair. Powered with CAPIXYL™, niacinamide, biotin, apple extract, and alpine flax, it helps reduce the appearance of visible shedding and soothes the feel of scalp inflammation, while promoting a healthier scalp environment to support hair growth. Finished with cooling mint and eucalyptus, it leaves the scalp with a clean, invigorating feel after every use.\n50ML / 1.7FL.OZ",
+                    "Language": {
+                        "Code": "en"
+                    },
+                    "MetaTitle": "",
+                    "Description": "REUZEL Rosemary Mint Hair & Scalp Serum is a lightweight, fast-absorbing serum for the appearance of denser, thicker-looking hair. Powered with CAPIXYL™, niacinamide, biotin, apple extract, and alpine flax, it helps reduce the appearance of visible shedding and soothes the feel of scalp inflammation, while promoting a healthier scalp environment to support hair growth. Finished with cooling mint and eucalyptus, it leaves the scalp with a clean, invigorating feel after every use.\n50ML / 1.7FL.OZ",
+                    "Ingredients": "REUZEL Rosemary Mint Hair & Scalp Serum is a lightweight, fast-absorbing serum for the appearance of denser, thicker-looking hair. Powered with CAPIXYL™, niacinamide, biotin, apple extract, and alpine flax, it helps reduce the appearance of visible shedding and soothes the feel of scalp inflammation, while promoting a healthier scalp environment to support hair growth. Finished with cooling mint and eucalyptus, it leaves the scalp with a clean, invigorating feel after every use.\n50ML / 1.7FL.OZ",
+                    "MetaDescription": "",
+                    "ShortDescription": "",
+                    "UsageInstructions": "REUZEL Rosemary Mint Hair & Scalp Serum is a lightweight, fast-absorbing serum for the appearance of denser, thicker-looking hair. Powered with CAPIXYL™, niacinamide, biotin, apple extract, and alpine flax, it helps reduce the appearance of visible shedding and soothes the feel of scalp inflammation, while promoting a healthier scalp environment to support hair growth. Finished with cooling mint and eucalyptus, it leaves the scalp with a clean, invigorating feel after every use.\n50ML / 1.7FL.OZ"
+                }
+            ],
+            "DiscountValue": null
+        }
+    ],
+    "BlogPosts": [
+        {
+            "Id": "a3eb52c1-5cea-47e7-b24e-aa956772762f",
+            "CreatedAt": "2026-08-12T10:24:42.30743+00:00",
+            "IsPublished": true,
+            "PublishedAt": "2026-10-19T13:04:49.260956+00:00",
+            "Translations": [
+                {
+                    "Slug": "aroghj-ev-paylun-mashki-ughecuycha",
+                    "Title": "Առողջ և փայլուն մաշկի ամբողջական ուղեցույց",
+                    "Content": "<h2>The Ultimate Guide to Healthy and Glowing Skin</h2>\n\n<p>Healthy skin starts with a consistent skincare routine and the right products. You don't need a complicated routine to achieve beautiful, glowing skin.</p>\n\n<h3>1. Cleanse Your Skin</h3>\n<p>Start your routine with a gentle cleanser to remove dirt, excess oil, and makeup without damaging the skin barrier.</p>\n\n<h3>2. Keep Your Skin Hydrated</h3>\n<p>Hydration is essential for maintaining soft and healthy-looking skin. Choose a moisturizer that matches your skin type and use it regularly.</p>\n\n<h3>3. Don't Forget Sunscreen</h3>\n<p>Daily sun protection helps protect your skin from UV damage and premature signs of aging. Apply a broad-spectrum SPF every morning.</p>\n\n<h3>4. Stay Consistent</h3>\n<p>The most important part of skincare is consistency. Give your products enough time to work and build a routine that you can follow every day.</p>\n\n<p>With the right routine and quality products, healthy and glowing skin can become part of your everyday life.</p>",
+                    "Excerpt": "Узнайте о простых и эффективных привычках ухода, которые помогут сохранить кожу здоровой, увлажненной и сияющей.",
+                    "Language": {
+                        "Code": "en"
+                    },
+                    "MetaTitle": "",
+                    "MetaDescription": ""
+                },
+                {
+                    "Slug": "aroghj-ev-paylun-mashki-ughecuycha",
+                    "Title": "Առողջ և փայլուն մաշկի ամբողջական ուղեցույց",
+                    "Content": "<h2>The Ultimate Guide to Healthy and Glowing Skin</h2>\n\n<p>Healthy skin starts with a consistent skincare routine and the right products. You don't need a complicated routine to achieve beautiful, glowing skin.</p>\n\n<h3>1. Cleanse Your Skin</h3>\n<p>Start your routine with a gentle cleanser to remove dirt, excess oil, and makeup without damaging the skin barrier.</p>\n\n<h3>2. Keep Your Skin Hydrated</h3>\n<p>Hydration is essential for maintaining soft and healthy-looking skin. Choose a moisturizer that matches your skin type and use it regularly.</p>\n\n<h3>3. Don't Forget Sunscreen</h3>\n<p>Daily sun protection helps protect your skin from UV damage and premature signs of aging. Apply a broad-spectrum SPF every morning.</p>\n\n<h3>4. Stay Consistent</h3>\n<p>The most important part of skincare is consistency. Give your products enough time to work and build a routine that you can follow every day.</p>\n\n<p>With the right routine and quality products, healthy and glowing skin can become part of your everyday life.</p>",
+                    "Excerpt": "Узнайте о простых и эффективных привычках ухода, которые помогут сохранить кожу здоровой, увлажненной и сияющей.",
+                    "Language": {
+                        "Code": "hy"
+                    },
+                    "MetaTitle": "",
+                    "MetaDescription": ""
+                },
+                {
+                    "Slug": "aroghj-ev-paylun-mashki-ughecuycha",
+                    "Title": "Полное руководство по здоровой и сияющей коже",
+                    "Content": "<h2>The Ultimate Guide to Healthy and Glowing Skin</h2>\n\n<p>Healthy skin starts with a consistent skincare routine and the right products. You don't need a complicated routine to achieve beautiful, glowing skin.</p>\n\n<h3>1. Cleanse Your Skin</h3>\n<p>Start your routine with a gentle cleanser to remove dirt, excess oil, and makeup without damaging the skin barrier.</p>\n\n<h3>2. Keep Your Skin Hydrated</h3>\n<p>Hydration is essential for maintaining soft and healthy-looking skin. Choose a moisturizer that matches your skin type and use it regularly.</p>\n\n<h3>3. Don't Forget Sunscreen</h3>\n<p>Daily sun protection helps protect your skin from UV damage and premature signs of aging. Apply a broad-spectrum SPF every morning.</p>\n\n<h3>4. Stay Consistent</h3>\n<p>The most important part of skincare is consistency. Give your products enough time to work and build a routine that you can follow every day.</p>\n\n<p>With the right routine and quality products, healthy and glowing skin can become part of your everyday life.</p>",
+                    "Excerpt": "Узнайте о простых и эффективных привычках ухода, которые помогут сохранить кожу здоровой, увлажненной и сияющей.",
+                    "Language": {
+                        "Code": "ru"
+                    },
+                    "MetaTitle": "",
+                    "MetaDescription": ""
+                }
+            ],
+            "CoverImageUrl": null
+        }
+    ],
+    "Categories": [
+        {
+            "Id": "6653a296-0398-4d08-b0ba-4286fca76a7d",
+            "ImageUrl": "/uploads/gallery/0c5abdb45bd240c687d1283fee2490b8.jpg",
+            "IsActive": true,
+            "CreatedAt": "2026-07-29T09:29:52.269895+00:00",
+            "SortOrder": 1,
+            "Translations": [
+                {
+                    "Name": "Hair Care",
+                    "Slug": "hair-care",
+                    "Language": {
+                        "Code": "en"
+                    },
+                    "MetaTitle": null,
+                    "Description": "Shampoos, conditioners, and treatments for healthy hair.",
+                    "MetaDescription": null
+                },
+                {
+                    "Name": "Մազերի խնամք",
+                    "Slug": "mazeri-khnamq",
+                    "Language": {
+                        "Code": "hy"
+                    },
+                    "MetaTitle": null,
+                    "Description": "Շամպուններ և խնամքի միջոցներ առողջ մազերի համար։",
+                    "MetaDescription": null
+                },
+                {
+                    "Name": "Уход за волосами",
+                    "Slug": "uhod-za-volosami",
+                    "Language": {
+                        "Code": "ru"
+                    },
+                    "MetaTitle": null,
+                    "Description": "Шампуни и средства для здоровых волос.",
+                    "MetaDescription": null
+                }
+            ],
+            "ParentCategoryId": null
+        },
+        {
+            "Id": "e2276c5e-0243-4212-8a5e-63c9f08fabc5",
+            "ImageUrl": "/uploads/gallery/bb2dc2c0b8774f08a2e0d3913c4ea22e.jpg",
+            "IsActive": true,
+            "CreatedAt": "2026-07-29T09:29:52.270726+00:00",
+            "SortOrder": 2,
+            "Translations": [
+                {
+                    "Name": "Beard Care",
+                    "Slug": "beard-care",
+                    "Language": {
+                        "Code": "en"
+                    },
+                    "MetaTitle": null,
+                    "Description": "Oils, balms, and grooming tools for a premium beard.",
+                    "MetaDescription": null
+                },
+                {
+                    "Name": "Մորուքի խնամք",
+                    "Slug": "morowqi-khnamq",
+                    "Language": {
+                        "Code": "hy"
+                    },
+                    "MetaTitle": null,
+                    "Description": "Յուղեր և բալզամներ մորուքի խնամքի համար։",
+                    "MetaDescription": null
+                },
+                {
+                    "Name": "Уход за бородой",
+                    "Slug": "uhod-za-borodoy",
+                    "Language": {
+                        "Code": "ru"
+                    },
+                    "MetaTitle": null,
+                    "Description": "Масла и бальзамы для ухода за бородой.",
+                    "MetaDescription": null
+                }
+            ],
+            "ParentCategoryId": null
+        }
+    ],
+    "GalleryImages": [
+        {
+            "Url": "/uploads/gallery/f5065bc9da5040f89eb7a430dac05308.jpg",
+            "AltText": null,
+            "FileName": "f5065bc9da5040f89eb7a430dac05308.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-07-29T12:15:45.716148+00:00",
+            "SizeBytes": 67988
+        },
+        {
+            "Url": "/uploads/gallery/cf5406c54bd244298729bce26a191749.jpg",
+            "AltText": null,
+            "FileName": "cf5406c54bd244298729bce26a191749.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-07-29T12:16:43.747074+00:00",
+            "SizeBytes": 67988
+        },
+        {
+            "Url": "/uploads/gallery/20680ade03ad4ca180d5d4981951ecd2.jpg",
+            "AltText": null,
+            "FileName": "20680ade03ad4ca180d5d4981951ecd2.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-07-29T12:16:44.109008+00:00",
+            "SizeBytes": 230005
+        },
+        {
+            "Url": "/uploads/gallery/12182f28412d4fbfb1957c76192d8bdf.jpg",
+            "AltText": null,
+            "FileName": "12182f28412d4fbfb1957c76192d8bdf.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-07-29T12:21:11.206542+00:00",
+            "SizeBytes": 67988
+        },
+        {
+            "Url": "/uploads/gallery/774a4af759bc42429d5d1202c994ba1a.jpg",
+            "AltText": null,
+            "FileName": "774a4af759bc42429d5d1202c994ba1a.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-07-29T12:21:11.847486+00:00",
+            "SizeBytes": 230005
+        },
+        {
+            "Url": "/uploads/gallery/d176d0ec89c140eabf42689a226a58cc.jpg",
+            "AltText": null,
+            "FileName": "d176d0ec89c140eabf42689a226a58cc.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-07-29T13:22:37.104618+00:00",
+            "SizeBytes": 74312
+        },
+        {
+            "Url": "/uploads/gallery/0c5abdb45bd240c687d1283fee2490b8.jpg",
+            "AltText": null,
+            "FileName": "0c5abdb45bd240c687d1283fee2490b8.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-07-29T13:22:37.232382+00:00",
+            "SizeBytes": 522280
+        },
+        {
+            "Url": "/uploads/gallery/bb2dc2c0b8774f08a2e0d3913c4ea22e.jpg",
+            "AltText": null,
+            "FileName": "bb2dc2c0b8774f08a2e0d3913c4ea22e.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-07-29T13:22:37.292561+00:00",
+            "SizeBytes": 376728
+        },
+        {
+            "Url": "/uploads/gallery/a7183fbbf85849b1b6cf2b7dad7d8114.jpg",
+            "AltText": null,
+            "FileName": "a7183fbbf85849b1b6cf2b7dad7d8114.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-08-03T09:30:44.911582+00:00",
+            "SizeBytes": 39453
+        },
+        {
+            "Url": "/uploads/products/c2710069251e48e79d3ada3097eb2606.webp",
+            "AltText": null,
+            "FileName": "c2710069251e48e79d3ada3097eb2606.webp",
+            "MimeType": "image/webp",
+            "CreatedAt": "2026-08-12T08:04:14.321656+00:00",
+            "SizeBytes": 316416
+        },
+        {
+            "Url": "/uploads/gallery/78ebec3cbc474d8ea3177a0838ad233b.webp",
+            "AltText": null,
+            "FileName": "78ebec3cbc474d8ea3177a0838ad233b.webp",
+            "MimeType": "image/webp",
+            "CreatedAt": "2026-08-12T10:18:03.453614+00:00",
+            "SizeBytes": 316416
+        },
+        {
+            "Url": "/uploads/products/8f8e6be00f92412bb9ea07dac518f3d7.jpg",
+            "AltText": null,
+            "FileName": "8f8e6be00f92412bb9ea07dac518f3d7.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-08-17T10:22:25.770976+00:00",
+            "SizeBytes": 53696
+        },
+        {
+            "Url": "/uploads/products/8f6fb417f8ec469c8dcfa344ab24cfaa.jpg",
+            "AltText": null,
+            "FileName": "8f6fb417f8ec469c8dcfa344ab24cfaa.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-08-17T10:22:36.383821+00:00",
+            "SizeBytes": 53696
+        },
+        {
+            "Url": "/uploads/products/e956930e1e9d4ec9b43186a69f5170a4.jpg",
+            "AltText": null,
+            "FileName": "e956930e1e9d4ec9b43186a69f5170a4.jpg",
+            "MimeType": "image/jpeg",
+            "CreatedAt": "2026-08-17T10:22:40.783347+00:00",
+            "SizeBytes": 53696
+        },
+        {
+            "Url": "/uploads/products/f091ea5e678e424384f39b29567b02bb.webp",
+            "AltText": null,
+            "FileName": "f091ea5e678e424384f39b29567b02bb.webp",
+            "MimeType": "image/webp",
+            "CreatedAt": "2026-08-17T10:26:52.339983+00:00",
+            "SizeBytes": 80744
+        },
+        {
+            "Url": "/uploads/products/0d02f5bea51d497891ddce7fb7733de8.webp",
+            "AltText": null,
+            "FileName": "0d02f5bea51d497891ddce7fb7733de8.webp",
+            "MimeType": "image/webp",
+            "CreatedAt": "2026-08-17T10:31:12.88302+00:00",
+            "SizeBytes": 80744
+        },
+        {
+            "Url": "/uploads/products/651ee7779c414adaa6582eb5f19d10b1.webp",
+            "AltText": null,
+            "FileName": "651ee7779c414adaa6582eb5f19d10b1.webp",
+            "MimeType": "image/webp",
+            "CreatedAt": "2026-08-17T10:36:14.101731+00:00",
+            "SizeBytes": 20046
+        },
+        {
+            "Url": "/uploads/products/617caab4f31f438b80547460acab5dc8.webp",
+            "AltText": null,
+            "FileName": "617caab4f31f438b80547460acab5dc8.webp",
+            "MimeType": "image/webp",
+            "CreatedAt": "2026-08-17T11:07:31.658759+00:00",
+            "SizeBytes": 20046
+        },
+        {
+            "Url": "/uploads/products/658b9884013441eeb4a122bede401cae.webp",
+            "AltText": null,
+            "FileName": "658b9884013441eeb4a122bede401cae.webp",
+            "MimeType": "image/webp",
+            "CreatedAt": "2026-08-17T11:07:31.744712+00:00",
+            "SizeBytes": 20046
+        },
+        {
+            "Url": "/uploads/banners/7cf17952956e44c6a2e4f4e4a86c157f.png",
+            "AltText": null,
+            "FileName": "7cf17952956e44c6a2e4f4e4a86c157f.png",
+            "MimeType": "image/png",
+            "CreatedAt": "2026-10-19T11:12:02.578665+00:00",
+            "SizeBytes": 1848546
+        },
+        {
+            "Url": "/uploads/products/174cc90546e64deb9e82a0989b4aed8c.webp",
+            "AltText": null,
+            "FileName": "174cc90546e64deb9e82a0989b4aed8c.webp",
+            "MimeType": "image/webp",
+            "CreatedAt": "2026-10-20T06:21:24.760022+00:00",
+            "SizeBytes": 139276
+        },
+        {
+            "Url": "/uploads/banners/d18f8bc7ddf2478aa6b42e7fd8dd4501.webp",
+            "AltText": null,
+            "FileName": "d18f8bc7ddf2478aa6b42e7fd8dd4501.webp",
+            "MimeType": "image/webp",
+            "CreatedAt": "2026-10-20T08:08:55.480737+00:00",
+            "SizeBytes": 20046
+        },
+        {
+            "Url": "/uploads/products/1619c10c4fab4630b5df9f66d95e3b0e.webp",
+            "AltText": null,
+            "FileName": "1619c10c4fab4630b5df9f66d95e3b0e.webp",
+            "MimeType": "image/webp",
+            "CreatedAt": "2026-10-20T08:11:01.518896+00:00",
+            "SizeBytes": 80744
+        }
+    ]
+}

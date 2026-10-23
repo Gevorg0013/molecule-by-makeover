@@ -8,7 +8,8 @@ namespace MoleculeByMakeover.Infrastructure.Persistence.Seed;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(AppDbContext context, IPasswordHasherService passwordHasher)
+    // imageExists reports whether an uploaded image URL resolves to a file on disk.
+    public static async Task SeedAsync(AppDbContext context, IPasswordHasherService passwordHasher, Func<string?, bool> imageExists)
     {
         await context.Database.MigrateAsync();
 
@@ -24,6 +25,8 @@ public static class DbSeeder
         await SeedSettingsAsync(context);
 
         await context.SaveChangesAsync();
+
+        await CatalogSnapshotSeeder.SeedAsync(context, languages, imageExists);
     }
 
     private static async Task<Dictionary<string, Language>> SeedLanguagesAsync(AppDbContext context)

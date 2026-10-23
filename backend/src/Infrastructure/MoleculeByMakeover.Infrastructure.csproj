@@ -26,6 +26,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Persistence\Seed\catalog-snapshot.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
