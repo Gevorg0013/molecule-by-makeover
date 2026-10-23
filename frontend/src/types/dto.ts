@@ -333,7 +333,8 @@ export interface ProductTranslationDto {
 export interface ProductTranslationInput {
   languageCode: LanguageCode
   name: string
-  slug: string
+  /** Omit to keep the current slug, or to have the server generate one from the name. */
+  slug?: string
   shortDescription?: string | null
   description?: string | null
   ingredients?: string | null

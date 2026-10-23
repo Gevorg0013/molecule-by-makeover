@@ -240,7 +240,7 @@
     "invalidImageType": "Only JPG, PNG or WebP images are allowed.",
     "imageTooLarge": "Image exceeds the 10 MB upload limit.",
     "emptyImage": "The selected file is empty.",
-    "englishTranslationRequired": "The English name and slug are required.",
+    "englishTranslationRequired": "The English name is required.",
     "categoryRequired": "Please select a category.",
     "productCode": "Product Code",
     "searchProducts": "Search by name or product code…",

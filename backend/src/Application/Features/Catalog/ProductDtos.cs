@@ -51,10 +51,12 @@ public record ProductDetailDto(
     double AverageRating,
     int ReviewCount);
 
+// Slug is optional: when omitted the server keeps the translation's current slug, or generates
+// one from Name for a new translation.
 public record ProductTranslationInput(
     string LanguageCode,
     string Name,
-    string Slug,
+    string? Slug,
     string? ShortDescription,
     string? Description,
     string? Ingredients,

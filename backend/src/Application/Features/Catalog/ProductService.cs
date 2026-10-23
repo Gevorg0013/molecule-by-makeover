@@ -150,8 +150,10 @@ public class ProductService(
         product.IsActive = request.IsActive;
         product.UpdatedAt = DateTimeOffset.UtcNow;
 
+        // Slugs are part of public product URLs, so a translation keeps its slug unless one is sent.
+        var currentSlugs = product.Translations.ToDictionary(t => t.LanguageId, t => t.Slug);
         product.Translations.Clear();
-        await ApplyTranslationsAsync(product, request.Translations, ct);
+        await ApplyTranslationsAsync(product, request.Translations, ct, currentSlugs);
 
         await ApplyTagsAsync(product, request.Tags, ct);
 
@@ -211,18 +213,24 @@ public class ProductService(
         logger.LogInformation("Image {ImageId} removed from product {ProductId}", imageId, productId);
     }
 
-    private async Task ApplyTranslationsAsync(Product product, List<ProductTranslationInput> translations, CancellationToken ct)
+    private async Task ApplyTranslationsAsync(
+        Product product, List<ProductTranslationInput> translations, CancellationToken ct,
+        Dictionary<int, string>? currentSlugs = null)
     {
         foreach (var t in translations)
         {
             var language = await unitOfWork.Languages.GetByCodeAsync(t.LanguageCode, ct)
                 ?? throw new BadRequestException($"Unknown language code '{t.LanguageCode}'.");
 
+            var slug = !string.IsNullOrWhiteSpace(t.Slug) ? t.Slug.Trim()
+                : currentSlugs?.GetValueOrDefault(language.Id)
+                ?? await GenerateUniqueSlugAsync(t.Name, product.Id, ct);
+
             var translation = new ProductTranslation
             {
                 LanguageId = language.Id,
                 Name = t.Name,
-                Slug = t.Slug,
+                Slug = slug,
                 ShortDescription = t.ShortDescription,
                 Description = t.Description,
                 Ingredients = t.Ingredients,
@@ -235,6 +243,42 @@ public class ProductService(
             product.Translations.Add(translation);
             unitOfWork.TrackNew(translation);
         }
+    }
+
+    // Product pages are looked up by slug in any language, so a generated slug must not be used by
+    // another product in any language (the same slug in two languages of one product is fine) (deleted products included: their rows still hold the
+    // unique index). Duplicate names get a numeric suffix: "beard-oil", "beard-oil-2", ...
+    private async Task<string> GenerateUniqueSlugAsync(string name, Guid productId, CancellationToken ct)
+    {
+        var baseSlug = Slugify(name);
+        var taken = (await unitOfWork.Products.Query().IgnoreQueryFilters()
+                .Where(p => p.Id != productId)
+                .SelectMany(p => p.Translations)
+                .Where(t => t.Slug == baseSlug || t.Slug.StartsWith(baseSlug + "-"))
+                .Select(t => t.Slug)
+                .ToListAsync(ct))
+            .ToHashSet();
+
+        var slug = baseSlug;
+        for (var suffix = 2; taken.Contains(slug); suffix++)
+            slug = $"{baseSlug}-{suffix}";
+        return slug;
+    }
+
+    // Lowercase letters and digits from any script (matching the slug validation rule), with every
+    // other run of characters collapsed to a single hyphen.
+    private static string Slugify(string name)
+    {
+        var builder = new System.Text.StringBuilder(name.Length);
+        foreach (var c in name.Normalize(System.Text.NormalizationForm.FormC).ToLowerInvariant())
+        {
+            if (char.IsLetterOrDigit(c)) builder.Append(c);
+            else if (builder.Length > 0 && builder[^1] != '-') builder.Append('-');
+        }
+
+        var slug = builder.ToString().Trim('-');
+        if (slug.Length > 280) slug = slug[..280].TrimEnd('-');
+        return slug.Length > 0 ? slug : "product";
     }
 
     /// <summary>

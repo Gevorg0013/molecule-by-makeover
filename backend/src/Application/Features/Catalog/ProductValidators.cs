@@ -30,10 +30,10 @@ public class ProductUpsertRequestValidator : AbstractValidator<ProductUpsertRequ
             t.RuleFor(x => x.LanguageCode).NotEmpty().Must(c => LanguageCodes.All.Contains(c));
             t.RuleFor(x => x.Name).NotEmpty().MaximumLength(300);
             t.RuleFor(x => x.Slug)
-                .NotEmpty()
                 .MaximumLength(300)
                 .Matches(@"^[\p{L}\p{N}-]+$")
-                .WithMessage("Slug can contain only letters, numbers, and hyphens.");
+                .WithMessage("Slug can contain only letters, numbers, and hyphens.")
+                .When(x => !string.IsNullOrWhiteSpace(x.Slug));
         });
     }
 }

@@ -240,7 +240,7 @@
     "invalidImageType": "Допускаются только изображения JPG, PNG или WebP.",
     "imageTooLarge": "Изображение превышает лимит загрузки в 10 МБ.",
     "emptyImage": "Выбранный файл пуст.",
-    "englishTranslationRequired": "Название и slug на английском обязательны.",
+    "englishTranslationRequired": "Название на английском обязательно.",
     "categoryRequired": "Выберите категорию.",
     "productCode": "Код товара",
     "searchProducts": "Поиск по названию или коду товара…",

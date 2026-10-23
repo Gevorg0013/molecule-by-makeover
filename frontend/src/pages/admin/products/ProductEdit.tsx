@@ -34,7 +34,7 @@ function emptyTranslations(): Record<LanguageCode, ProductTranslationInput> {
   return Object.fromEntries(
     LANGUAGES.map((lang) => [
       lang,
-      { languageCode: lang, name: '', slug: '', shortDescription: '', description: '', ingredients: '', usageInstructions: '', benefits: '', metaTitle: '', metaDescription: '' },
+      { languageCode: lang, name: '', shortDescription: '', description: '', ingredients: '', usageInstructions: '', benefits: '', metaTitle: '', metaDescription: '' },
     ]),
   ) as Record<LanguageCode, ProductTranslationInput>
 }
@@ -86,7 +86,6 @@ export function AdminProductEditPage() {
       next[tr.languageCode] = {
         languageCode: tr.languageCode,
         name: tr.name,
-        slug: tr.slug,
         shortDescription: tr.shortDescription ?? '',
         description: tr.description ?? '',
         ingredients: tr.ingredients ?? '',
@@ -136,15 +135,16 @@ export function AdminProductEditPage() {
 
     // Inactive tab panels are unmounted, so the `required` attributes on the English inputs
     // never fire when the admin submits from the HY or RU tab - check it explicitly.
-    if (!translations.en.name.trim() || !translations.en.slug.trim()) {
+    if (!translations.en.name.trim()) {
       toast.error(t('admin.englishTranslationRequired'))
       return
     }
 
     // Languages the admin never filled in are omitted rather than sent as blank rows, so each
-    // language can be entered independently instead of all three being mandatory.
+    // language can be entered independently instead of all three being mandatory. No slug is
+    // sent: the server keeps the existing one (so product URLs don't change) or generates it.
     const filledTranslations = LANGUAGES.map((lang) => translations[lang]).filter(
-      (tr) => tr.name.trim() !== '' || tr.slug.trim() !== '',
+      (tr) => tr.name.trim() !== '',
     )
 
     const body: ProductUpsertRequest = {
@@ -308,14 +308,6 @@ export function AdminProductEditPage() {
                   <Input
                     value={translations[lang].name}
                     onChange={(e) => updateTranslation(lang, { name: e.target.value })}
-                    required={lang === 'en'}
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1.5">Slug</Label>
-                  <Input
-                    value={translations[lang].slug}
-                    onChange={(e) => updateTranslation(lang, { slug: e.target.value })}
                     required={lang === 'en'}
                   />
                 </div>

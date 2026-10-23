@@ -8,6 +8,27 @@ import { Input } from '@/components/ui/input'
 import { useSubscribeNewsletter } from '@/hooks/useNewsletter'
 import { authErrorMessage } from '@/hooks/useAuth'
 
+// lucide-react 1.x ships no brand icons, so these are inline outline glyphs drawn in the same
+// 24px / 2px-stroke style as the rest of the site's icons.
+const SOCIAL_LINKS = [
+  {
+    label: 'Instagram',
+    href: 'https://www.instagram.com/makeover.beautyroom?cplk=MXQxNHc2dTZmc2gxOQ==',
+    icon: (
+      <>
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+      </>
+    ),
+  },
+  {
+    label: 'Facebook',
+    href: 'https://facebook.com/share/1UYdmiTkkj?mibextid=wwXIfr',
+    icon: <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />,
+  },
+]
+
 export function Footer() {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
@@ -19,6 +40,32 @@ export function Footer() {
         <div>
           <p className="font-serif text-lg">{t('brand.name')}</p>
           <p className="mt-2 max-w-xs text-sm text-muted-foreground">{t('brand.tagline')}</p>
+          <div className="-ml-2 mt-4 flex items-center gap-1">
+            {SOCIAL_LINKS.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={link.label}
+                title={link.label}
+                className="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="size-5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  {link.icon}
+                </svg>
+              </a>
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-col gap-2 text-sm">
