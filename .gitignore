@@ -9,9 +9,8 @@ publish/
 *.user
 *.suo
 
-# Logs & uploads (dev-time)
+# Logs (dev-time)
 backend/src/API/logs/
-backend/src/API/wwwroot/uploads/
 
 # Secrets
 .env
